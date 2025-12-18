@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CMSTrain.Application\CMSTrain.Application.csproj" />
+      <ProjectReference Include="..\CMSTrain.Helper\CMSTrain.Helper.csproj" />
+      <ProjectReference Include="..\CMSTrain.Infrastructure\CMSTrain.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+      <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.0.2" />
+      <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.2" />
+      <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.0.2" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+    </ItemGroup>
+
+</Project>
