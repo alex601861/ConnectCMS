@@ -1,0 +1,14 @@
+﻿<div class="loader-container">
+    <div style="height: 100%; width: 100%; margin: 0; position: fixed" class="d-flex align-items-center justify-content-center">
+        @if (Type == "GIF")
+        {
+            <img src="loader.gif"
+                 style="height: 350px; width: 350px; opacity: 0.8"
+                 alt="Loader"/>
+        }
+        else if (Type == "Circular Progress")
+        {
+            <MudProgressCircular Color="Color.Secondary" Size="Size.Medium" Indeterminate="true" />
+        }
+    </div>
+</div>

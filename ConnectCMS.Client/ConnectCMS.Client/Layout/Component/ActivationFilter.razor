@@ -1,0 +1,11 @@
+﻿<div class="dropdown">
+    <MudSelect T="bool?" 
+               Variant="Variant.Text" 
+               AnchorOrigin="Origin.BottomCenter" 
+               Value="@Value" 
+               ValueChanged="@OnValueChanged">
+        <MudSelectItem T="bool?" Value="@Constants.ActivationStatus.All">@Constants.ActivationStatus.AllAction</MudSelectItem>
+        <MudSelectItem T="bool?" Value="@Constants.ActivationStatus.Active">@Constants.ActivationStatus.ActiveAction</MudSelectItem>
+        <MudSelectItem T="bool?" Value="@Constants.ActivationStatus.Inactive">@Constants.ActivationStatus.InactiveAction</MudSelectItem>
+    </MudSelect>
+</div>

@@ -1,0 +1,78 @@
+﻿@page "/login"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="authentication-form">
+    <div class="container-fluid">
+        <div class="card col-xxl-8 col-lg-10 col-12 mx-auto">
+            <EditForm Model="@LoginDto" OnValidSubmit="@LoginHandler">
+                <DataAnnotationsValidator />
+                <div class="card__grid row align-items-center">
+                    <div class="card__grid-item col-xl-7 col-lg-7 col-12">
+                        <div class="authentication-form__left">
+                            <div class="mb-10 card__logo text-center">
+                                <MudImage Src="images/logo/logo.svg" Height="125" Width="165" />
+                            </div>
+                            <div class="card__title mb-6">
+                                <div class="mb-2">
+                                    <MudText Typo="Typo.h4" HtmlTag="h1" Class="fw-bold text-dark">Login</MudText>
+                                </div>
+                                <div class="mb-2">
+                                    <MudText Typo="Typo.body1" Class="text-normal">Please sign in by your email address and password.</MudText>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-4">
+                                <div class="d-flex flex-column gap-3">
+                                    <MudTextField @bind-Value="LoginDto.Email"
+                                                  For="@(() => LoginDto.Email)"
+                                                  Label="Email Address"
+                                                  InputType="InputType.Email"
+                                                  Variant="Variant.Outlined"
+                                                  Immediate="true"/>
+                                    <MudTextField @bind-Value="LoginDto.Password"
+                                                  For="@(() => LoginDto.Password)"
+                                                  Label="Password"
+                                                  Variant="Variant.Outlined"
+                                                  InputType="@PasswordInput"
+                                                  Adornment="Adornment.End"
+                                                  AdornmentIcon="@PasswordInputIcon"
+                                                  OnAdornmentClick="TogglePasswordVisibility" 
+                                                  Immediate="true"/>
+                                    <div class="d-flex align-items-center justify-content-between gap-3">
+                                        <MudLink Href="/forgot-password" Typo="Typo.subtitle2" Class="forget-pw fw-bold" Color="Color.Primary">
+                                            Forgot Password?
+                                        </MudLink>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card__grid-item col-xl-5 col-lg-5 col-12">
+                        <div class="authentication-form__right">
+                            <MudImage Src="images/login/sign-in.png" Alt="" Width="564" Height="337" Class="img-fluid w-100" />
+                        </div>
+                    </div>
+                </div>
+                <div class="card__grid row align-items-center mt-8 gap-y-6">
+                    <div class="card__grid-item col-lg-7 col-12">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" ButtonType="ButtonType.Submit" OnClick="@LoginHandler" Disabled="@(BusySubmitting || string.IsNullOrEmpty(LoginDto.Email) || string.IsNullOrEmpty(LoginDto.Password))" class="btn btn--lg">
+                            <MudTooltip Text="Click here, to login.">
+                                Login
+                            </MudTooltip>
+                        </MudButton>
+                    </div>
+                    <div class="card__grid-item col-lg-5 col-12">
+                        <div class="referral-text">
+                            <p class="d-flex align-items-center justify-content-center gap-1 mb-0">
+                                Don't have an account?
+                                <MudLink Href="register" Color='Color.Primary' class="fw-bold">Register</MudLink>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>

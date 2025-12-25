@@ -1,0 +1,8 @@
+﻿@inherits LayoutComponentBase
+
+@if (Item != null)
+{
+    <MudNavLink Href="@Item.Url" Icon="@Icon" Disabled="@(!Item.IsAssigned)" Class="nav-item">
+        @Item.Title
+    </MudNavLink>
+}

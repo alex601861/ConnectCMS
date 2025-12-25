@@ -1,0 +1,13 @@
+::deep .rich-text-editor {
+    width: 100%; 
+    max-width: 100%; 
+    min-width: 100%;
+    max-height: 250px;
+}
+
+::deep .value-text-editor {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    max-height: 1000px;
+}

@@ -1,0 +1,36 @@
+@page "/email-verification-confirmation/{Token}/{UserId}"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="register vh-100 d-flex align-items-center justify-center">
+    <div class="container">
+        <div class="col-xl-11 mx-auto">
+            <div class="card p-card">
+                <div class="card-header bg-transparent border-0 pa-0">
+                    <div class="card-header__grid d-flex justify-space-between">
+                        <div class="card-header__grid-item">
+                            <h1 class="fw-bold">Email Verification</h1>
+                        </div>
+                        <div class="card-header__grid-item">
+                            <MudImage Src="images/logo/logo.svg" Alt="TMS Logo" Class="" Fluid="true" Width="120" Height="75" />
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pa-0">
+                    <div class="mt-8 d-grid">
+                        @if (IsVerified)
+                        {
+                            <MudButton DropShadow="false" Variant="Variant.Filled" Class="btn btn-orange pa-3" Color="Color.Primary" ButtonType="ButtonType.Button" Href="login">
+                                <MudTooltip Text="Click here, to navigate to login.">
+                                    Login
+                                </MudTooltip>
+                            </MudButton>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

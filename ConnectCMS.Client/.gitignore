@@ -251,84 +251,30 @@ paket-files/
 .idea/
 *.sln.iml
 
-# Application Configurations
 !appsettings.json
 !appsettings.example.json
 appsettings.Development.json
-appsettings.Sandbox.json
 appsettings.Staging.json
 appsettings.Production.json
-
-!authentication.json
-!authentication.example.json
-authentication.Development.json
-authentication.Sandbox.json
-authentication.Staging.json
-authentication.Production.json
-
-!client.json
-!client.example.json
-client.Development.json
-client.Sandbox.json
-client.Staging.json
-client.Production.json
-
-!database.json
-!database.example.json
-database.Development.json
-database.Sandbox.json
-database.Staging.json
-database.Production.json
-
-!seed.json
-!seed.example.json
-seed.Development.json
-seed.Sandbox.json
-seed.Staging.json
-seed.Production.json
-
-!smtp.json
-!smtp.example.json
-smtp.Development.json
-smtp.Sandbox.json
-smtp.Staging.json
-smtp.Production.json
 
 # Docker Files
 !docker-compose.yml
 !docker-compose.example.yml
 docker-compose.Development.yml
-docker-compose.Sandbox.yml
 docker-compose.Staging.yml
 docker-compose.Production.yml
 
-# Build and Log Files
 build/
 Logs/
+wwwroot/documents/*
+!wwwroot/documents/.gitkeep
 package.json
 global.json
 mono*.blob
 
 # CI/CD
 .DS_Store
+**tags**
 <<<<<<< HEAD
 .ci/preview.sh
 .ci
-
-# Ignore image files
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.tiff
-*.ico
-*.svg
-
-# Ignore document files
-*.doc
-*.docx
-*.xls
-*.xlsx
-*.pdf
-*.pptx

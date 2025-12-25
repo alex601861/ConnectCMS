@@ -1,0 +1,23 @@
+﻿<MudFileUpload T="IBrowserFile" FilesChanged="OnResourceUpload" accept="@AcceptedExtensions" Class="file-upload">
+    <ActivatorContent>
+        <MudPaper Elevation="0" Class="d-flex align-items-center justify-space-between rounded">
+            <MudText Typo="Typo.subtitle2" Class="text-dark">
+                @if (IsUploadedFileValid && !string.IsNullOrEmpty(FileName))
+                {
+                    @FileName
+                }
+                else
+                {
+                    @FileUploadedMessage
+                }
+            </MudText>
+            <div class="d-flex gap-x-2">
+                @if (IsUploadedFileValid && !string.IsNullOrEmpty(FileName))
+                {
+                    <MudIconButton Icon="@Icons.Material.Outlined.Cancel" DropShadow="false" Color="Color.Error" Variant="Variant.Outlined" OnClick="OnFileRemoval"/>
+                }
+                <MudIconButton Icon="@Icons.Material.Outlined.FileUpload" DropShadow="false" Color="Color.Primary" Variant="Variant.Outlined" />
+            </div>
+        </MudPaper>
+    </ActivatorContent>
+</MudFileUpload>

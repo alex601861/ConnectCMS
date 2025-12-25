@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+@if (Group != null)
+{
+    <MudNavGroup Class="nav-menu" Title="@Group.Title" Expanded="false">
+        @if (Group.SubMenus is not null)
+        {
+            foreach (var item in Group.SubMenus)
+            {
+                if (item.SubMenus != null && item.SubMenus.Any())
+                {
+                    <NavMenuGroup Group="item"/>
+                }
+                else
+                {
+                    <NavMenuItem Item="item"/>
+                }
+            }
+        }
+    </MudNavGroup>
+}

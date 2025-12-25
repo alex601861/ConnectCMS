@@ -1,0 +1,107 @@
+﻿@page "/register"
+@layout EmptyLayout
+@attribute [AllowAnonymous]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="authentication-form">
+    <div class="container-fluid">
+        <div class="card col-xxl-8 col-lg-10 col-12 mx-auto">
+            <EditForm Model="@RegisterDto" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="card__grid row align-items-center">
+                    <div class="card__grid-item col-xl-7 col-lg-7 col-12">
+                        <div class="authentication-form__left">
+                            <div class="mb-5 card__logo text-center">
+                                <MudImage Src="images/logo/logo.svg" Height="125" Width="165" />
+                            </div>
+                            <div class="card__title mb-6">
+                                <div class="mb-2">
+                                    <MudText Typo="Typo.h4" HtmlTag="h1" Class="fw-bold mb-2">Register</MudText>
+                                </div>
+                                <div class="mb-2">
+                                    <MudText Typo="Typo.body1" Class="text-normal">Please register your account via filling the respective form.</MudText>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-3">
+                                <div class="row gap-y-5">
+                                    <div class="col-12 text-center">
+                                        <div @onclick="ToggleRegisterImage">
+                                            @if (RegisterDto.ImageUrl == null)
+                                            {
+                                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                                                    <MudImage Src="images/icons/user.svg" Alt="User Profile Picture" Style="width: 44px; height: 44px"></MudImage>
+                                                </MudAvatar>
+                                            }
+                                            else
+                                            {
+                                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto">
+                                                    <MudImage Src="@ImageUrl" Alt="User Profile Picture"></MudImage>
+                                                </MudAvatar>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-12">
+                                        <MudTextField @bind-Value="RegisterDto.Name" Label="Full Name" For="@(() => RegisterDto.Name)" InputType="InputType.Text" Variant="Variant.Outlined" />
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-12">
+                                        <MudTextField @bind-Value="RegisterDto.Email" For="@(() => RegisterDto.Email)" Label="Email Address" InputType="InputType.Email" Variant="Variant.Outlined" />
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-12">
+                                        <MudTextField @bind-Value="RegisterDto.PhoneNumber" Label="Phone Number" For="@(() => RegisterDto.PhoneNumber)" InputType="InputType.Number" Variant="Variant.Outlined" />
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-12">
+                                        <MudSelect T="@(GenderType?)" @bind-Value="RegisterDto.Gender" Label="Gender" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                                            <MudSelectItem Value="@(GenderType.Male as GenderType?)">Male</MudSelectItem>
+                                            <MudSelectItem Value="@(GenderType.Female as GenderType?)">Female</MudSelectItem>
+                                            <MudSelectItem Value="@(GenderType.Other as GenderType?)">Other</MudSelectItem>
+                                        </MudSelect>
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-12">
+                                        <MudTextField @bind-Value="RegisterDto.Password" For="@(() => RegisterDto.Password)" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" />
+                                    </div>
+                                    <div class="col-xl-6 col-md-6 col-12">
+                                        <MudTextField @bind-Value="RegisterDto.ConfirmPassword" For="@(() => RegisterDto.ConfirmPassword)" Label="Confirm Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card__grid-item col-xl-5 col-lg-5 col-12">
+                        <div class="authentication-form__right">
+                            <MudImage Src="images/login/sign-up.png" Alt="" Width="564" Height="337" Class="img-fluid w-100" />
+                        </div>
+                    </div>
+                </div>
+                <div class="card__grid row align-items-center mt-8 gap-y-6">
+                    <div class="card__grid-item col-lg-7 col-12">
+                        <MudButton Variant="Variant.Filled" Class="btn btn--lg" Color="Color.Primary" ButtonType="ButtonType.Submit" OnClick="HandleValidSubmit" Disabled="@BusySubmitting" DropShadow="false">
+                            <MudTooltip Text="Click here, to register.">
+                                Sign Up
+                            </MudTooltip>
+                        </MudButton>
+                    </div>
+                    <div class="card__grid-item col-lg-5 col-12">
+                        <div class="referral-text">
+                            <p class="d-flex align-items-center justify-content-center gap-1">
+                                Already have an account?
+                                <MudLink Href="login" Color='Color.Primary' class="fw-bold">Login</MudLink>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@if (OpenRegisterImageDrawerToggle)
+{
+    <ModalLayout T="@FileUploadResultDto"
+                 Module="Upload Image"
+                 SubmitColor="Color.Primary"
+                 Size="modal-md"
+                 OnSave="ToggleRegisterImage">
+        <ImageCropper OnFileUploaded="HandleRegisterImageUpload" />
+    </ModalLayout>
+}

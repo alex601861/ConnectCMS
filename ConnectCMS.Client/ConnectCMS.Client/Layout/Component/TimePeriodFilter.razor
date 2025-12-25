@@ -1,0 +1,12 @@
+<div class="dropdown">
+    <MudSelect T="int"
+               Variant="Variant.Text"
+               AnchorOrigin="Origin.BottomCenter"
+               Value="@Value"
+               ValueChanged="@OnValueChanged">
+        <MudSelectItem T="int" Value="@Constants.TimePeriod.All">@Constants.TimePeriod.AllAction</MudSelectItem>
+        <MudSelectItem T="int" Value="@Constants.TimePeriod.Weekly">@Constants.TimePeriod.WeeklyAction</MudSelectItem>
+        <MudSelectItem T="int" Value="@Constants.TimePeriod.Monthly">@Constants.TimePeriod.MonthlyAction</MudSelectItem>
+        <MudSelectItem T="int" Value="@Constants.TimePeriod.Yearly">@Constants.TimePeriod.YearlyAction</MudSelectItem>
+    </MudSelect>
+</div>

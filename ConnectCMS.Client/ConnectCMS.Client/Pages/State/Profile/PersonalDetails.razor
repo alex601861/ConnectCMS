@@ -1,0 +1,94 @@
+﻿<div class="inner-padding">
+    <div class="row mt-4">
+        <EditForm Model="@ProfileUpdate" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5 mb-2">
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="ProfileUpdate.Name" Label="Full Name" For="@(() => ProfileUpdate.Name)" Variant="Variant.Outlined" Immediate="true" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="ProfileUpdate.Email" Label="Email Address" For="@(() => ProfileUpdate.Email)" Variant="Variant.Outlined" InputType="InputType.Email" Immediate="true" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="ProfileUpdate.PhoneNumber" Label="Phone Number" For="@(() => ProfileUpdate.PhoneNumber)" Variant="Variant.Outlined" InputType="InputType.Number" Immediate="true" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="ProfileUpdate.Address" Label="Address" For="@(() => ProfileUpdate.Address)" Variant="Variant.Outlined" Immediate="true" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect @bind-Value="ProfileUpdate.CountryId"
+                                   Label="Country"
+                                   For="@(() => ProfileUpdate.CountryId)"
+                                   Variant="Variant.Outlined"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   FullWidth>
+                            <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Country</MudSelectItem>
+                            @foreach (var item in Countries)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="text-dark">Gender</MudText>
+                        <MudRadioGroup T="@(GenderType)" @bind-Value="@ProfileUpdate.Gender">
+                            <MudRadio Value="@(GenderType.Male)" Color="Color.Secondary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Male</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Female)" Color="Color.Error">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Female</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Other)" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Other</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    @if (UserProfile.RoleName is Constants.Roles.Candidate or Constants.Roles.Client)
+                    {
+                        if (!string.IsNullOrEmpty(UserProfile.Organization))
+                        {
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudTextField @bind-Value="UserProfile.Organization" Label="Organization" For="@(() => UserProfile.Organization)" Variant="Variant.Outlined" ReadOnly="true" />
+                            </div>
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudSelect @bind-Value="ProfileUpdate.DesignationId"
+                                           Label="Designation"
+                                           For="@(() => ProfileUpdate.DesignationId)"
+                                           Variant="Variant.Outlined"
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           FullWidth>
+                                    <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                    @foreach (var item in Designations)
+                                    {
+                                        <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-xl-12 col-md-12 col-12">
+                                <MudSelect @bind-Value="ProfileUpdate.DesignationId"
+                                           Label="Designation"
+                                           For="@(() => ProfileUpdate.DesignationId)"
+                                           Variant="Variant.Outlined"
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           FullWidth>
+                                    <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                    @foreach (var item in Designations)
+                                    {
+                                        <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="text-end">
+                    <MudButton DropShadow="false" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="btn btn--sm" Disabled="@(BusySubmitting || !ValidateProfileDetails())">Update</MudButton>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>

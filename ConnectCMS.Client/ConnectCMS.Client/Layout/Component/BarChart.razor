@@ -1,0 +1,12 @@
+﻿@typeparam T
+
+<ApexChart TItem="T"
+           Options="Options"
+           Height="@Height">
+    <ApexPointSeries TItem="T"
+                     Items="Items"
+                     Name="@Title"
+                     XValue="XValue"
+                     SeriesType="SeriesType.Bar"
+                     YAggregate="YValue" />
+</ApexChart>

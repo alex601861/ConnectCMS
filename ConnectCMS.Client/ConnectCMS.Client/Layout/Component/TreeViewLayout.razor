@@ -1,0 +1,17 @@
+﻿@inherits ComponentBase
+
+@if (Item != null)
+{
+    <MudTooltip Text="@Item.Description">
+        <MudTreeViewItem T="Guid" Text="@Item.Title" Expanded="true" Value="@Item.Id">
+            @if (Item.SubMenus is { Count: > 0 })
+            {
+                foreach (var subMenu in Item.SubMenus)
+                {
+                    <TreeViewLayout Item="subMenu" />
+                }
+            }
+        </MudTreeViewItem>
+    </MudTooltip>
+    
+}

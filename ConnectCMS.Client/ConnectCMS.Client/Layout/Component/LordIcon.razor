@@ -1,0 +1,17 @@
+﻿@if (string.IsNullOrEmpty(State))
+{
+    <lord-icon src="@Icon"
+               trigger="@Trigger"
+               colors="primary:@PrimaryColor,secondary:@SecondaryColor"
+               style="width: @GetWidthInPixel(); height:@GetHeightInPixel();">
+    </lord-icon>    
+}
+else
+{
+    <lord-icon src="@Icon"
+               trigger="@Trigger"
+               state="@State"
+               colors="primary:@PrimaryColor,secondary:@SecondaryColor"
+               style="width: @GetWidthInPixel(); height:@GetHeightInPixel();">
+    </lord-icon>
+}

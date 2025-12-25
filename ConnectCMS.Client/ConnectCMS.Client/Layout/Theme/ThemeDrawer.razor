@@ -1,0 +1,73 @@
+<MudDrawer Anchor="Anchor.Right" @bind-Open="ThemeDrawerOpen" Elevation="25" Variant="@DrawerVariant.Temporary" Width="350px" Height="100vh">
+    <MudDrawerHeader Class="align-center">
+        <MudText Typo="Typo.h6">
+            Theme Manager
+        </MudText>
+        <MudSpacer />
+        <MudIconButton Color="Color.Default" Icon="@Icons.Material.Filled.Close" OnClick="@(() => ThemeDrawerOpenChanged.InvokeAsync(false))" Size="Size.Small" />
+    </MudDrawerHeader>
+    <div class="px-5">
+        <div class="mb-2">
+            <div class="accordion custom-accordion d-flex flex-column gap-y-6">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="panel-theme-font">
+                        <button class="accordion-button text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#panel-theme-font-families" aria-expanded="true" aria-controls="panel-theme-font-families">
+                            Fonts
+                        </button>
+                    </h2>
+                    <div id="panel-theme-font-families" class="accordion-collapse collapse show" aria-labelledby="panel-theme-font">
+                        <div class="accordion-body">
+                            <MudRadioGroup @bind-Value="ThemePreference.Font">
+                                <MudRadio Value="@Constants.FontFamily.Satoshi" Color="Color.Primary" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.FontFamily.Satoshi</MudText>
+                                </MudRadio>
+                                <MudRadio Value="@Constants.FontFamily.Poppins" Color="Color.Primary" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.FontFamily.Poppins</MudText>
+                                </MudRadio>
+                                <MudRadio Value="@Constants.FontFamily.Roboto" Color="Color.Primary" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.FontFamily.Roboto</MudText>
+                                </MudRadio>
+                                <MudRadio Value="@Constants.FontFamily.Lato" Color="Color.Primary" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.FontFamily.Lato</MudText>
+                                </MudRadio>
+                                <MudRadio Value="@Constants.FontFamily.Inter" Color="Color.Primary" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.FontFamily.Inter</MudText>
+                                </MudRadio>
+                            </MudRadioGroup>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-2">
+            <div class="accordion custom-accordion d-flex flex-column gap-y-6">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="panel-theme-primary-color">
+                        <button class="accordion-button text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#panel-theme-primary-color-families" aria-expanded="true" aria-controls="panel-theme-primary-color-families">
+                            Primary Color
+                        </button>
+                    </h2>
+                    <div id="panel-theme-primary-color-families" class="accordion-collapse collapse show" aria-labelledby="panel-theme-primary-color">
+                        <div class="accordion-body">
+                            <MudRadioGroup @bind-Value="ThemePreference.PrimaryColor">
+                                <MudRadio Value="@Constants.PrimaryColor.Yellow" Color="Color.Success" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.PrimaryColor.Yellow</MudText>
+                                </MudRadio>
+                                <MudRadio Value="@Constants.PrimaryColor.Orange" Color="Color.Success" Class="custom-width">
+                                    <MudText Typo="Typo.body2" Class="hfs6 title fw-normal">@Constants.PrimaryColor.Orange</MudText>
+                                </MudRadio>
+                            </MudRadioGroup>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-end">
+            <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Filled" Class="btn btn--sm" OnClick="UpdateTheme">
+                Save
+            </MudButton>
+        </div>
+    </div>
+</MudDrawer>
+
+<MudOverlay DarkBackground="false" OnClick="@(() => ThemeDrawerOpenChanged.InvokeAsync(false))" Visible="ThemeDrawerOpen" VisibleChanged="ThemeDrawerOpenChanged" />

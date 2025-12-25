@@ -1,0 +1,29 @@
+﻿@if (TotalRecords > 0)
+{
+    <div class="pagination-wrapper row mt-8 justify-content-between gap-y-3">
+        <div class="col-auto">
+            <MudSelect T="int"
+                       Label="Page Size"
+                       Class="flex-grow-1"
+                       Variant="Variant.Outlined"
+                       ValueChanged="OnPageSizeChanged"
+                       Value="SelectedPageSize"
+                       AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem Value="12">12</MudSelectItem>
+                <MudSelectItem Value="24">24</MudSelectItem>
+                <MudSelectItem Value="48">48</MudSelectItem>
+            </MudSelect>
+        </div>
+        <div class="col-auto">
+            <MudPagination ShowLastButton="true"
+                           ShowFirstButton="true"
+                           Count="PageCount"
+                           DropShadow="false"
+                           Selected ="@SelectedPageNumber"
+                           SelectedChanged="OnPageNumberChanged"/>
+        </div>
+        <div class="col-auto">
+            <MudText Typo="Typo.body1">Showing @StartRecord - @EndRecord entries out of @TotalRecords records.</MudText>
+        </div>
+    </div>
+}

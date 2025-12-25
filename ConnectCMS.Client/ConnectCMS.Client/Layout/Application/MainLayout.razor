@@ -1,0 +1,103 @@
+@inherits LayoutComponentBase
+
+<CascadingValue Value="this">
+    <MudRTLProvider RightToLeft="@RightToLeft">
+        <MudThemeProvider Theme="Theme" />
+        <MudPopoverProvider />
+        <MudDialogProvider />
+        <MudSnackbarProvider />
+        @if (GlobalState == null || GlobalState?.UserId == Guid.Empty)
+        {
+            <MudContainer MaxWidth="MaxWidth.Large" Style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+                <MudPaper Elevation="25" Class="pa-8">
+                    @Body
+                </MudPaper>
+            </MudContainer>
+        }
+        else
+        {
+            <MudLayout>
+                @* TODO: Add Client Preference Layout and Theme Selection *@
+                @if (IsThemeChangeable)
+                {
+                    <ThemeDrawer @bind-ThemeDrawerOpen="OpenThemeDrawer" ThemePreference="ClientPreference" ThemePreferenceChanged="ThemePreferenceChanged" />
+                    <ThemeButton OnClick="@(() => OpenThemeDrawer = true)" />
+                }
+                <MudAppBar Class="topbar bg-white" Elevation="0">
+                    <div class="d-flex align-items-center justify-content-start">
+                        <MudTooltip Text="Toggle Drawer" Color="Color.Primary">
+                            <MudIconButton Class="drawer-button" Icon="@Icons.Material.Rounded.Notes" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle"/>
+                        </MudTooltip>
+
+                        <MudText Typo="Typo.h6" HtmlTag="h1" Color="Color.Inherit" Class="topbar-text ms-2">
+                            @PageTitle
+                        </MudText>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-x-4">
+                        @* TODO: Add notification bell icon and respective notifications. *@
+                        @* <MudImage Src="images/icons/notification.svg" Alt="Bell Icon" Height="20" Width="20" /> *@
+                        <MudMenu AnchorOrigin="Origin.BottomRight" LockScroll="true" TransformOrigin="Origin.TopRight">
+                            <ActivatorContent>
+                                <Avatar Height="36"
+                                        Width="36"
+                                        Name="@(GlobalState?.Name ?? "")"
+                                        FilePath="@Constants.FilePath.UsersImagesFilePath"
+                                        ImageUrl="@(GlobalState?.ImageUrl ?? "")"/>
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudPaper Elevation="0" Class="profile-dropdown">
+                                    <MudCard Elevation="0">
+                                        <MudCardContent Class="pa-2 d-flex align-items-center gap-x-3">
+                                            <Avatar Height="36"
+                                                    Width="36"
+                                                    Name="@(GlobalState?.Name ?? "")"
+                                                    IsMarginRequired="false"
+                                                    FilePath="@Constants.FilePath.UsersImagesFilePath"
+                                                    ImageUrl="@(GlobalState?.ImageUrl ?? "")"/>
+                                            <MudPaper Elevation="0" Class="bg-transparent">
+                                                <MudText Typo="Typo.subtitle2" Class="fw-bold text-dark user-name">
+                                                    @GlobalState?.Name
+                                                </MudText>
+                                                <MudText Typo="Typo.subtitle2" Class="text-normal user-email">@GlobalState?.EmailAddress</MudText>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="fw-bold user-designation">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Secondary" Style="font-size: 6px"/>
+                                                    @GlobalState?.RoleName
+                                                </MudText>
+                                            </MudPaper>
+                                        </MudCardContent>
+                                    </MudCard>
+                                    <MudDivider/>
+                                    <MudMenuItem>
+                                        <NavLink href="/profile" class="d-flex align-items-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Outlined.Person" Style="font-size: 20px; fill: #141414"/>
+                                            <MudText Typo="Typo.subtitle2" Class="text-dark">My Profile</MudText>
+                                        </NavLink>
+                                    </MudMenuItem>
+                                    <MudDivider/>
+                                    <MudMenuItem>
+                                        <NavLink class="d-flex align-items-center gap-2" @onclick="LogoutHandler">
+                                            <MudIcon Icon="@Icons.Material.Outlined.Logout" Style="font-size: 20px; fill: #141414"/>
+                                            <MudText Typo="Typo.subtitle2" Class="text-dark">Sign Out</MudText>
+                                        </NavLink>
+                                    </MudMenuItem>
+                                </MudPaper>
+                            </ChildContent>
+                        </MudMenu>
+                    </div>
+                </MudAppBar>
+                <MudDrawer @bind-Open="@DrawerOpen" Elevation="0" ClipMode="DrawerClipMode.Never" Class="sidebar" Width="280px" Height="100%">
+                    <NavMenu MenuItems="AssignedMenus"/>
+                </MudDrawer>
+                <MudMainContent>
+                    <MudContainer MaxWidth="MaxWidth.False" Class="py-6 px-lg-8">
+                        @Body
+                        <MudScrollToTop TopOffset="400" Style="z-index:2000;">
+                            <MudFab StartIcon="@Icons.Material.Filled.KeyboardArrowUp" Color="Color.Primary"/>
+                        </MudScrollToTop>
+                    </MudContainer>
+                </MudMainContent>
+            </MudLayout>
+        }
+    </MudRTLProvider>
+</CascadingValue>

@@ -1,0 +1,18 @@
+﻿::deep
+  .mud-input-control
+  > .mud-input-control-input-container
+  > .mud-input-label-inputcontrol {
+  width: calc(100% - 27px);
+}
+::deep
+  .mud-shrink
+  ~ label.mud-input-label.mud-input-label-inputcontrol.mud-input-label-outlined,
+::deep
+  .mud-input:focus-within
+  ~ label.mud-input-label.mud-input-label-inputcontrol.mud-input-label-outlined {
+  width: max-content;
+}
+
+::deep .mud-icon-button {
+  padding: 0 12px 0 0;
+}

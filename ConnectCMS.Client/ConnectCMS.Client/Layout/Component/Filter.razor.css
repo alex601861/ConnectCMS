@@ -1,0 +1,6 @@
+::deep .mud-popover .mud-list {
+    overflow: hidden;
+}
+.filter-dropdown {
+    min-width: 350px;
+}

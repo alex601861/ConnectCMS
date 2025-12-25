@@ -1,0 +1,22 @@
+﻿/* ::deep .mud-input-control-input-container > div {
+  border: 1.2px solid #2d685c66;
+  width: max-content;
+  border-radius: 50%;
+  padding: 12px;
+  margin: 0 auto;
+} */
+/* ::deep .mud-fab-extended.mud-fab-size-large {
+  width: 96px;
+  height: 96px;
+  padding: 5px;
+  min-width: 48px;
+  min-height: auto;
+  border-radius: 50%;
+  background-color: #f8f8fa;
+}
+::deep .mud-fab-extended.mud-fab-size-large .mud-fab-label {
+  flex-direction: column;
+}
+::deep .mud-icon-root {
+  color: #5c5c5c;
+} */

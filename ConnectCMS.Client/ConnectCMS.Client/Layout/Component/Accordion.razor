@@ -1,0 +1,28 @@
+﻿<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="d-flex justify-content-between">
+                <div class="py-2">
+                    @CardHeader
+                </div>
+                <button @onclick="Toggle" type="button" class="btn btn-secondary btn-sm float-right">
+                    @if (ShowCardBody)
+                    {
+                        <MudImage Src="images/icons/collapse-up.svg" Alt="" Width="20" Height="20"/>
+                    }
+                    else
+                    {
+                        <MudImage Src="images/icons/collapse-down.svg" Alt="" Width="20" Height="20"/>
+                    }
+                </button>
+            </div>
+        </div>
+        
+    </div>
+    @if (ShowCardBody)
+    {
+        <div class="card-body">
+            @CardBody
+        </div>
+    }
+</div>

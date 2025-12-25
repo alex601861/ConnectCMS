@@ -1,0 +1,29 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="@_lazyLoadedAssemblies">
+        <Found Context="routeData">
+            @if (IsAnonymousRoute(routeData.PageType))
+            {
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            }
+            else
+            {
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        @if (context.User.Identity?.IsAuthenticated == false)
+                        {
+                            <RedirectToLogin />
+                        }
+                        else
+                        {
+                            <NonAuthorized />
+                        }
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            }
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(NotFound)" />
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

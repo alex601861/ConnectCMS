@@ -1,0 +1,68 @@
+﻿@if (Gender != null)
+{
+    <MudBadge Icon="@GenderIcon" Color="@GenderColor" Overlap="true" Bordered="true">
+        @if (string.IsNullOrEmpty(GetFilePath()))
+        {
+            if (IsMarginRequired)
+            {
+                <MudAvatar Style="@AvatarStyle" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                    @Name.ToUpper().FirstOrDefault()
+                </MudAvatar>
+            }
+            else
+            {
+                <MudAvatar Style="@AvatarStyle" Color="Color.Secondary" Variant="Variant.Outlined">
+                    @Name.ToUpper().FirstOrDefault()
+                </MudAvatar>
+            }
+        }
+        else
+        {
+            if (IsMarginRequired)
+            {
+                <MudAvatar Style="@AvatarStyle" Class="mx-auto">
+                    <MudImage Src="@GetFilePath()" Alt="User Profile Picture" />
+                </MudAvatar>
+            }
+            else
+            {
+                <MudAvatar Style="@AvatarStyle">
+                    <MudImage Src="@GetFilePath()" Alt="User Profile Picture" />
+                </MudAvatar>
+            }
+        }
+    </MudBadge>
+}
+else
+{
+    if (string.IsNullOrEmpty(GetFilePath()))
+    {
+        if (IsMarginRequired)
+        {
+            <MudAvatar Style="@AvatarStyle" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                @Name.ToUpper().FirstOrDefault()
+            </MudAvatar>
+        }
+        else
+        {
+            <MudAvatar Style="@AvatarStyle" Color="Color.Secondary" Variant="Variant.Outlined">
+                @Name.ToUpper().FirstOrDefault()
+            </MudAvatar>
+        }
+    }
+    else
+    {
+        if (IsMarginRequired)
+        {
+            <MudAvatar Style="@AvatarStyle" Class="mx-auto">
+                <MudImage Src="@GetFilePath()" Alt="User Profile Picture" />
+            </MudAvatar>
+        }
+        else
+        {
+            <MudAvatar Style="@AvatarStyle">
+                <MudImage Src="@GetFilePath()" Alt="User Profile Picture" />
+            </MudAvatar>
+        }
+    }
+}

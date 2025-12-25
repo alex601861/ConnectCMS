@@ -1,0 +1,25 @@
+﻿<div class="d-flex justify-content-center align-items-center text-center" style="min-height: 400px;">
+    <div class="my-auto">
+        <div class="mb-5">
+            <LordIcon Height="200"
+                      Width="200"
+                      Icon="@Icon"
+                      State="hover-pinch"
+                      Trigger="loop"/>
+        </div>
+        <div class="text-center">
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="text-dark mb-2">
+                @Title
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-normal mb-6">
+                @Description
+            </MudText>
+            @if (ChildContent != null)
+            {
+                <div class="mt-5">
+                    @ChildContent
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+@typeparam T
+
+<div class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog @Size" role="document" style="@Style">
+        <div class="modal-content px-6 py-4">
+            <div class="modal-header">
+                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="fw-bold text-dark">@Module</MudText>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="ModalCancel"></button>
+            </div>
+            <EditForm Model="@ModelInstance">
+                <DataAnnotationsValidator />
+                <div class="modal-body px-0 py-6">
+                    @if(!string.IsNullOrEmpty(Title) && !string.IsNullOrEmpty(Description))
+                    {
+                        <MudPaper Elevation="0" Class="mb-6">
+                            <MudText Typo="Typo.h6" HtmlTag="h3" Class="fw-bold text-dark mb-1">@Title</MudText>
+                            <MudText Typo="Typo.body2" Class="text-normal">@Description</MudText>
+                        </MudPaper>
+                    }
+                    <div>
+                        @ChildContent
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(CancelLabel) || !string.IsNullOrEmpty(SubmitLabel))
+                {
+                    if (Alignment == "Center")
+                    {
+                        <MudPaper Elevation="0" Class="d-flex justify-content-center gap-3 mt-4 mb-8">
+                            <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Outlined" Class="btn btn--sm" OnClick="ModalCancel">@CancelLabel</MudButton>
+                            @if (SubmitLabel != null)
+                            {
+                                <MudButton DropShadow="false" Color="SubmitColor" Variant="Variant.Filled" Class="btn btn--sm" OnClick="ModalSubmit" ButtonType="ButtonType.Submit" Disabled="@(IsDisabled)">@SubmitLabel</MudButton>
+                            }
+                        </MudPaper>
+                    }
+                    else
+                    {
+                        <div class="modal-footer pa-0 border-0">
+                            <MudPaper Elevation="0" Class="d-flex justify-content-end gap-3">
+                                <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Outlined" Class="btn btn--sm" OnClick="ModalCancel">@CancelLabel</MudButton>
+                                @if (SubmitLabel != null)
+                                {
+                                    <MudButton DropShadow="false" Color="SubmitColor" Variant="Variant.Filled" Class="btn btn--sm" OnClick="ModalSubmit" ButtonType="ButtonType.Submit" Disabled="@(IsDisabled)">@SubmitLabel</MudButton>
+                                }
+                            </MudPaper>
+                        </div>
+                    }
+                }
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>
