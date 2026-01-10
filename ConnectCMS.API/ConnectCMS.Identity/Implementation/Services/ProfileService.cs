@@ -1,4 +1,5 @@
-﻿using CMSTrain.Domain.Common;
+﻿using System.Text.RegularExpressions;
+using CMSTrain.Domain.Common;
 using CMSTrain.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using CMSTrain.Application.Exceptions;
@@ -140,6 +141,16 @@ public class ProfileService(
                 ["The new password doesn't match with your confirmed password"]);
         }
 
+        if (!PasswordRegex.IsMatch(changePassword.NewPassword))
+        {
+            throw new BadRequestException("Your password could not be changed",
+            [
+                "Password must be at least 6 characters long",
+                "Password must contain at least one uppercase letter (A-Z)",
+                "Password must contain at least one number (0-9)"
+            ]);
+        }
+
         var result = await userManager.ChangePasswordAsync(user, changePassword.CurrentPassword, changePassword.NewPassword);
 
         if (!result.Succeeded)
@@ -166,4 +177,7 @@ public class ProfileService(
 
         genericRepository.Update(userModel);
     }
+
+    private static readonly Regex PasswordRegex = 
+        new Regex(@"^(?=.*[A-Z])(?=.*\d).{6,}$");
 }
