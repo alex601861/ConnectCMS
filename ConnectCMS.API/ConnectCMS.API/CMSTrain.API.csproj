@@ -1,0 +1,75 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>CMSTrain</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MailKit" Version="4.7.1.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="NSwag.Annotations" Version="14.1.0" />
+        
+        <PackageReference Include="Serilog" Version="4.0.0" />
+        
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="appsettings.Development.json">
+        <DependentUpon>appsettings.json</DependentUpon>
+      </Content>
+      <Content Update="appsettings.Staging.json">
+        <DependentUpon>appsettings.json</DependentUpon>
+      </Content>
+      <Content Update="appsettings.Production.json">
+        <DependentUpon>appsettings.json</DependentUpon>
+      </Content>  
+        
+      <Content Update="menu.Development.json">
+        <DependentUpon>menu.json</DependentUpon>
+      </Content>
+      <Content Update="menu.Staging.json">
+        <DependentUpon>menu.json</DependentUpon>
+      </Content>
+      <Content Update="menu.Production.json">
+        <DependentUpon>menu.json</DependentUpon>
+      </Content>
+        
+      <Content Update="client.Development.json">
+        <DependentUpon>client.json</DependentUpon>
+      </Content>
+      <Content Update="client.Staging.json">
+        <DependentUpon>client.json</DependentUpon>
+      </Content>
+      <Content Update="client.Production.json">
+        <DependentUpon>client.json</DependentUpon>
+      </Content>
+        
+      <Content Update="questionnaire.Development.json">
+        <DependentUpon>questionnaire.json</DependentUpon>
+      </Content>
+      <Content Update="questionnaire.Staging.json">
+        <DependentUpon>questionnaire.json</DependentUpon>
+      </Content>
+      <Content Update="questionnaire.Production.json">
+        <DependentUpon>questionnaire.json</DependentUpon>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CMSTrain.Application\CMSTrain.Application.csproj" />
+      <ProjectReference Include="..\CMSTrain.Identity\CMSTrain.Identity.csproj" />
+      <ProjectReference Include="..\CMSTrain.Infrastructure\CMSTrain.Infrastructure.csproj" />
+      <ProjectReference Include="..\CMSTrain.Migrators.PostgreSQL\CMSTrain.Migrators.PostgreSQL.csproj" />
+      <ProjectReference Include="..\CMSTrain.Migrators.SQLServer\CMSTrain.Migrators.SQLServer.csproj" />
+    </ItemGroup>
+</Project>

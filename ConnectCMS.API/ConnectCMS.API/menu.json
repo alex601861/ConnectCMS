@@ -1,0 +1,15 @@
+{
+  "MenuSettings": {
+    "Menus": [
+      {
+        "Id": "",
+        "Title": "*****",
+        "Description": "**********",
+        "Sequence": 0,
+        "Url": "*****",
+        "IsActive": true,
+        "ChildMenus": null
+      }
+    ]
+  }
+}
