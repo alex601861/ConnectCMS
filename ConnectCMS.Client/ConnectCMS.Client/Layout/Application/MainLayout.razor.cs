@@ -63,11 +63,11 @@ public partial class MainLayout
         }
         else
         {
-            var returnUrl = NavigationManager.Uri;
-
-            if (returnUrl.Contains("subordinate-answer-upload-form")) return;
-            
-            if (!returnUrl.Contains("login") && !returnUrl.Contains("register")) await AuthenticationService.SetUpReturnUrl(returnUrl);
+            // var returnUrl = NavigationManager.Uri;
+            //
+            // if (returnUrl.Contains("subordinate-answer-upload-form")) return;
+            //
+            // if (!returnUrl.Contains("login") && !returnUrl.Contains("register")) await AuthenticationService.SetUpReturnUrl(returnUrl);
             
             NavigationManager.NavigateTo("/login");
         }

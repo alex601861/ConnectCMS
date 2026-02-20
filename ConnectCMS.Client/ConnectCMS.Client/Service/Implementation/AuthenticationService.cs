@@ -221,11 +221,6 @@ public class AuthenticationService(IBaseService baseService, ILocalStorageManage
 
     public async Task ClearNavigationUrl()
     {
-        var returnUrl = await localStorageManager.GetItemAsync<string>(Constants.LocalStorage.Navigation);
-
-        if (!string.IsNullOrEmpty(returnUrl))
-        {
-            await localStorageManager.ClearItemAsync(Constants.LocalStorage.Navigation);
-        }
+        await localStorageManager.ClearItemAsync(Constants.LocalStorage.Navigation);
     }
 }
