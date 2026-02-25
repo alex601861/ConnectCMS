@@ -1,0 +1,22 @@
+﻿@page "/personal-assessments/headings"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div>
+    <MudTabs Elevation="0" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+        <MudTabPanel Text="Headings" BadgeData="@HeadingCount.HeadingCount" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 0)
+            {
+                <Heading HeadingType="HeadingType.Heading" FacetType="FacetType.Heading" InspectionType="InspectionType.PersonalAssessment" OnHeadingCountUpdate="EventCallback.Factory.Create(this, HandleHeadersCount)"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Sub Headings" BadgeData="@HeadingCount.SubHeadingCount" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 1)
+            {
+                <Heading HeadingType="HeadingType.SubHeading" FacetType="FacetType.Heading" InspectionType="InspectionType.PersonalAssessment" OnHeadingCountUpdate="EventCallback.Factory.Create(this, HandleHeadersCount)"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>
+

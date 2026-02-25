@@ -1,0 +1,140 @@
+﻿@page "/training-formats"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (TrainingFormats == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateTrainingFormatModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Training Format</MudButton>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table format-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in TrainingFormats.Result)
+                    {
+                        <tr>
+                            <td>@(TrainingFormats.Result.IndexOf(item) + 1).</td>
+                            <td>@item.Name</td>
+                            <td>@((MarkupString)item.Description)</td>
+                            <td>
+                                <ActivationStatus IsActive="@item.IsActive" />
+                            </td>
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenTrainingFormatUpdateModal(item.Id)" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="@(item.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="@(item.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenTrainingFormatDeleteModal(item.Id)" />
+                                    </MudTooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="TrainingFormats.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="TrainingFormats.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateTrainingFormatDto"
+                     Module="Module"
+                     Title="Add Training Format"
+                     Description="Create a new training format, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertTrainingFormat"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateButtonDisabled">
+            <MudGrid class="mt-n4">
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="CreateTrainingFormatDto.Name" Label="Title" For="@(() => CreateTrainingFormatDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the training format" Immediate="true"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="CreateTrainingFormatDto.Description"/>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="@UpdateTrainingFormatDto"
+                     Module="Module"
+                     Title="Update Training Format"
+                     Description="Update an existing training format, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateTrainingFormat"
+                     IsDisabled="IsUpdateButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <div class="card-body pa-0">
+                <MudGrid class="mt-n4" Spacing=8>
+                    <MudItem class="pt-4" xs=12 md=12 xl=12>
+                        <MudTextField @bind-Value="UpdateTrainingFormatDto.Name" Label="Title" For="@(() => UpdateTrainingFormatDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the training format" Immediate="true"></MudTextField>
+                    </MudItem>
+                    <MudItem class="pt-4" xs=12 md=12 xl=12>
+                        <TextEditor @bind-Value="UpdateTrainingFormatDto.Description" />
+                    </MudItem>
+                </MudGrid>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@GetTrainingFormatDto"
+                     Module="Module"
+                     Title=@($"{(DeleteTrainingFormatDto.IsActive ? "Activate" : "Deactivate")} Training Format.")
+                     Description=@($"{(DeleteTrainingFormatDto.IsActive ? "Activate" : "deactivate")} the following training format, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteTrainingFormat"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(DeleteTrainingFormatDto.IsActive ? "Deactivate" : "Activate")"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(DeleteTrainingFormatDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteTrainingFormatDto.IsActive ? "deactivate" : "activate") the following training format?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

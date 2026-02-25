@@ -1,0 +1,418 @@
+@page "/client-organizations"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (ClientOrganizationList == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="inner-padding client">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" DropShadow="false" class="btn btn--md" Variant="Variant.Filled" OnClick="OpenRegisterOrganizationModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Register Organization</MudButton>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table country-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Admin Assigned</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in ClientOrganizationList.Result)
+                    {
+                        <tr>
+                            <td>@(ClientOrganizationList.Result.IndexOf(item) + 1).</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <Avatar Name="@item.Name" ImageUrl="@item.ImageUrl" FilePath="@Constants.FilePath.OrganizationsImagesFilePath" Height="40" Width="40" />
+                                    @item.Name
+                                </div>
+                            </td>
+                            <td>@item.Address</td>
+                            <td>
+                                @if (item.Admin == null)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error">
+                                        No
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                        Yes
+                                    </MudChip>
+                                }
+                            </td>
+                            <td>
+                                <ActivationStatus IsActive="@item.IsActive" />
+                            </td>
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenUpdateOrganizationModal(item.Id)" />
+                                    </MudTooltip>
+                                    @if (item.Admin == null && item.UserCount == 0)
+                                    {
+                                        <MudTooltip Text="Delete" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/delete.svg" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenOrganizationDeleteModal(item.Id)" />
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <MudTooltip Text="@(item.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="@(item.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenOrganizationActivationStatusModal(item.Id)" />
+                                        </MudTooltip>
+                                    }
+                                    <MudTooltip Text="@(item.Admin == null ? "Assign Admin" : "View Admin")" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="@(item.Admin == null ? "images/icons/assign-admin.svg" : "images/icons/view-admin.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => HandleAdminActions(item)" />
+                                    </MudTooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="ClientOrganizationList.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="ClientOrganizationList.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateOrganizationDto"
+                     Module="Organization"
+                     Title="Register Organization"
+                     Description="Register a new organization to the system, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@RegisterNewOrganization"
+                     CancelLabel="Discard"
+                     SubmitLabel="Register"
+                     IsDisabled="IsCreateClientButtonDisabled">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField Label="Organization Name" @bind-Value="RegisterOrganizationDto.Name" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="Organization Address" @bind-Value="RegisterOrganizationDto.Address" Variant="Variant.Outlined" Immediate="true"/>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <div class="file-upload" @onclick="ToggleClientRegistrationImage">
+                        <MudPaper Elevation="0" Class="d-flex align-items-center justify-space-between rounded">
+                            <MudText Typo="Typo.subtitle2" Class="text-dark">
+                                @(RegisterOrganizationDto.ImageUrl == null ? "Upload your client image" : RegisterOrganizationDto.ImageUrl.Name)
+                            </MudText>
+                            <MudIconButton Icon="@Icons.Material.Outlined.FileUpload" DropShadow="false" Color="Color.Primary" Variant="Variant.Outlined" OnClick="ToggleClientRegistrationImage" />
+                        </MudPaper>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsUpdateModalOpen)
+    {
+        <ModalLayout T="@UpdateOrganizationDto"
+                     Module="Organization"
+                     Title="Update Organization"
+                     Description="Update an existing organization to the system, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateOrganization"
+                     IsDisabled="IsUpdateClientButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem xs=12>
+                    <MudTextField @bind-Value="UpdateOrganizationDto.Name" Label="Name" For="@(() => UpdateOrganizationDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the Organization Name " Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 sm="6">
+                    <MudTextField @bind-Value="UpdateOrganizationDto.Address" Label="Address" Variant="Variant.Outlined" Placeholder="Enter the Organization Address" Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 sm="6">
+                    <div class="file-upload" @onclick="ToggleClientRegistrationImage">
+                        <MudPaper Elevation="0" Class="d-flex align-items-center justify-space-between rounded">
+                            <MudText Typo="Typo.subtitle2" Class="text-dark">
+                                @(UpdateOrganizationDto.ImageUrl == null ? "Upload your client image" : UpdateOrganizationDto.ImageUrl.Name)
+                            </MudText>
+                            <MudIconButton Icon="@Icons.Material.Outlined.FileUpload" DropShadow="false" Color="Color.Primary" Variant="Variant.Outlined" OnClick="ToggleClientRegistrationImage" />
+                        </MudPaper>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsActivationStatusModalOpen)
+    {
+        <ModalLayout T="@GetOrganizationDto"
+                     Module="Users"
+                     Title=@($"{(DeleteOrganizationDto.IsActive ? "Activate" : "Deactivate")} Organization.")
+                     Description=@($"{(DeleteOrganizationDto.IsActive ? "Activate" : "deactivate")} the following organization, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@ActivateDeactivateOrganization"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(DeleteOrganizationDto.IsActive ? "Deactivate" : "Activate")"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(DeleteOrganizationDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteOrganizationDto.IsActive ? "deactivate" : "activate") the following organization?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+    
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@GetOrganizationDto"
+                     Module="Organization"
+                     Title=@("Delete the following organization.")
+                     Description=@("Permanently delete the following organization, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteOrganization"
+                     CancelLabel="Cancel"
+                     SubmitLabel="Delete"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(Animations.Regular.Trash)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to permanently delete the following organization?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsClientOrganizationAdminModalOpen)
+    {
+        <ModalLayout T="@RegisterClientAdminDto"
+                     Module="Organizational Users"
+                     Title="Client Organization Admin"
+                     Description="Register an admin to the following client organization, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@RegisterClientOrganizationAdmin"
+                     CancelLabel="Discard"
+                     IsDisabled="IsAdminCreateButtonDisabled"
+                     SubmitLabel="Register">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-12 text-center">
+                        <div @onclick="ToggleClientOrganizationAdminRegistrationImage">
+                            @if (RegisterClientAdminDto.ImageUrl == null)
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                                    <MudImage Src="images/icons/user.svg" Alt="User Profile Picture" Style="width: 44px; height: 44px"></MudImage>
+                                </MudAvatar>
+                            }
+                            else
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto">
+                                    <MudImage Src="@RegisterClientAdminDto.Image" Alt="User Profile Picture" Style="width: 100px; height: 100px"></MudImage>
+                                </MudAvatar>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Full Name" @bind-Value="RegisterClientAdminDto.Name" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Email Address" @bind-Value="RegisterClientAdminDto.Email" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Phone Number" @bind-Value="RegisterClientAdminDto.PhoneNumber" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="text-dark">Gender</MudText>
+                        <MudRadioGroup T="@(GenderType?)" @bind-Value="@RegisterClientAdminDto.Gender">
+                            <MudRadio Value="@(GenderType.Male as GenderType?)" Color="Color.Secondary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Male</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Female as GenderType?)" Color="Color.Error">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Female</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Other as GenderType?)" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Other</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Password" @bind-Value="RegisterClientAdminDto.Password" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Confirm Password" @bind-Value="RegisterClientAdminDto.ConfirmPassword" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect T="Guid?" Label="Country" @bind-Value="RegisterClientAdminDto.CountryId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Country</MudSelectItem>
+                            @foreach (var item in Countries)
+                            {
+                                <MudSelectItem Value="@(item.Id as Guid?)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Role" ReadOnly="true" Variant="Variant.Outlined" Value="@Constants.UserRoles.ClientAdmin" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Designation" @bind-Value="RegisterClientAdminDto.DesignationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                            @foreach (var item in Designations)
+                            {
+                                <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Address" @bind-Value="RegisterClientAdminDto.Address" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsAdminDetailsModalOpen)
+    {
+        <ModalLayout T="@UpdateUserRequestDto"
+                     Module="Organizational Users"
+                     Title="Client Organization Admin"
+                     Description="Update an admin of the following client organization, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateUserDetails"
+                     IsDisabled="IsAdminUpdateButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-12 text-center">
+                        <div @onclick="ToggleUpdateUserImage">
+                            @if (string.IsNullOrEmpty(UserRequest.ImageUrl))
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                                    <MudImage Src="images/icons/user.svg" Alt="User Profile Picture" Style="width: 44px; height: 44px"></MudImage>
+                                </MudAvatar>
+                            }
+                            else
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto">
+                                    <MudImage Src="@UserRequest.ImageUrl" Alt="User Profile Picture"></MudImage>
+                                </MudAvatar>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.Name" Label="Full Name" For="@(() => UserRequest.Name)" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.EmailAddress" For="@(() => UserRequest.EmailAddress)" Label="Email Address" Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.PhoneNumber" Label="Phone Number" For="@(() => UserRequest.PhoneNumber)" Variant="Variant.Outlined" InputType="InputType.Number" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="text-dark">Gender</MudText>
+                        <MudRadioGroup T="@(GenderType?)" @bind-Value="@UserRequest.Gender">
+                            <MudRadio Value="@(GenderType.Male as GenderType?)" Color="Color.Secondary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Male</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Female as GenderType?)" Color="Color.Error">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Female</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Other as GenderType?)" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Other</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Country" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@UserRequest.CountryId">
+                            <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Country</MudSelectItem>
+                            @foreach (var item in Countries)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.Organization" Label="Organization" For="@(() => UserRequest.Organization)" Variant="Variant.Outlined" ReadOnly="true" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Designation" @bind-Value="UserRequest.DesignationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                            @foreach (var item in Designations)
+                            {
+                                <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Address" @bind-Value="UserRequest.Address" Required="true" Variant="Variant.Outlined" />
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (OpenClientImageDrawerToggle)
+    {
+        <ModalLayout T="@FileUploadResultDto"
+                     Module="Upload Image"
+                     SubmitColor="Color.Primary"
+                     Size="modal-md"
+                     OnSave="ToggleClientRegistrationImage">
+            <ImageCropper OnFileUploaded="HandleOrganizationRegisterImageUpload" />
+        </ModalLayout>
+    }
+
+    if (OpenClientOrganizationAdminImageDrawerToggle)
+    {
+        <ModalLayout T="@FileUploadResultDto"
+                     Module="Upload Image"
+                     SubmitColor="Color.Primary"
+                     Size="modal-md"
+                     OnSave="ToggleClientOrganizationAdminRegistrationImage">
+            <ImageCropper OnFileUploaded="HandleClientOrganizationAdminImageUpload" />
+        </ModalLayout>
+    }
+
+    if (OpenUpdateUserImageDrawerToggle)
+    {
+        <ModalLayout T="@FileUploadResultDto"
+                     Module="Upload Image"
+                     SubmitColor="Color.Primary"
+                     Size="modal-md"
+                     OnSave="ToggleUpdateUserImage">
+            <ImageCropper OnFileUploaded="HandleUpdateUserImageUpload" />
+        </ModalLayout>
+    }
+}

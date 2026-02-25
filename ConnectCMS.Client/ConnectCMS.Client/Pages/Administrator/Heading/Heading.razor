@@ -1,0 +1,221 @@
+﻿@if (Headings == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateHeadingModal" EndIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Heading</MudButton>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table strategic-trait-table">
+                <thead>
+                    <tr>
+                        <th style="width:5%">#</th>
+                        <th>Title</th>
+                        @if (HeadingType is HeadingType.Heading && FacetType is not FacetType.Facet)
+                        {
+                            <th>Sub Headings</th>
+                        }
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+               <tbody>
+                    @foreach (var heading in Headings.Result)
+                    {
+                        <tr>
+                            <td>@(Headings.Result.IndexOf(heading) + 1)</td>
+                            <td>@heading.Title</td>
+                            @if(HeadingType is HeadingType.Heading && FacetType is not FacetType.Facet)
+                            {
+                                <td>
+                                    <div class="trait-btn d-flex align-items-center gap-2">
+                                        @foreach (var subheading in heading.SubHeadings)
+                                        {
+                                            if (heading.SubHeadings.IndexOf(subheading) < 2)
+                                            {
+                                                <MudText Typo="Typo.subtitle2" Class="cursor-pointer">@subheading.Title</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.subtitle2" Class="cursor-pointer" @onclick="() => OpenAllSubHeadingDetailsModal(heading)">+@(heading.SubHeadings.Count - 2)</MudText>
+                                                break;
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            }
+                            <td>
+                                @((MarkupString)heading.Description)
+                            </td>
+                            <td>
+                                <ActivationStatus IsActive="@heading.IsActive" />
+                            </td>
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenHeadingUpdateModal(heading.Id)" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="@(heading.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="@(heading.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenHeadingDeleteModal(heading.Id)" />
+                                    </MudTooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <Pagination PageCount="Headings.TotalPages"
+                SelectedPageSize="@PageSize"
+                SelectedPageSizeChanged="UpdatePageSize"
+                SelectedPageNumber="@PageNumber"
+                SelectedPageNumberChanged="UpdatePageNumber"
+                TotalRecords="Headings.TotalCount" />
+    
+    if(IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateHeadingDto"
+                     Module="@FacetType.ToString()"
+                     Title="Create Heading"
+                     Description="Please fill in the following form to create a new heading."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertHeading"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateHeadingDisabled">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem Class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="CreateHeadingDto.Title" Label="Name" For="@(() => CreateHeadingDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the Heading Title " Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=6 xl=6>
+                    <MudSelect Label="Type" T="HeadingType" @bind-Value="CreateHeadingDto.Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" ReadOnly="@(FacetType == FacetType.Facet)">
+                        <MudSelectItem Value="@(HeadingType.None)" Disabled="true">Select a Type</MudSelectItem>
+                        <MudSelectItem Value="@(HeadingType.Heading)">Heading</MudSelectItem>
+                        <MudSelectItem Value="@(HeadingType.SubHeading)">Sub Heading</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="CreateHeadingDto.Description" />
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    @if (CreateHeadingDto.Type == HeadingType.SubHeading)
+                    {
+                        <MudSelect T="Guid?" Label="Parent Heading" @bind-Value="CreateHeadingDto.ParentHeadingId" Variant="Variant.Outlined"  AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem T="Guid?" Value="@(default(Guid?))" Disabled="true">Select a Parent Heading</MudSelectItem>
+                            @foreach (var parentHeadings in ParentHeadings)
+                            {
+                                <MudSelectItem T="Guid?" Value="@parentHeadings.Id">@parentHeadings.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+    
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="@UpdateHeadingDto"
+                     Module="@FacetType.ToString()"
+                     Title="Update Heading"
+                     Description="Please fill in the following form to update the Heading."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateHeading"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem Class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="UpdateHeadingDto.Title" Label="Name" For="@(() => UpdateHeadingDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the Heading Title " Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=6 xl=6>
+                    <MudSelect Label="Type" T="HeadingType" @bind-Value="UpdateHeadingDto.Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@(HeadingType.None)" Disabled="true">Select a Type</MudSelectItem>
+                        <MudSelectItem Value="@(HeadingType.Heading)">Heading</MudSelectItem>
+                        <MudSelectItem Value="@(HeadingType.SubHeading)">Sub Heading</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="UpdateHeadingDto.Description" />
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    @if (UpdateHeadingDto.Type == HeadingType.SubHeading)
+                    {
+                        <MudSelect T="Guid?" Label="Parent Heading" @bind-Value="UpdateHeadingDto.ParentHeadingId" Variant="Variant.Outlined"  AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem T="Guid?" Value="@(default(Guid?))" Disabled="true">Select a Parent @FacetType.ToString()</MudSelectItem>
+                            @foreach (var parentHeadings in ParentHeadings)
+                            {
+                                <MudSelectItem T="Guid?" Value="@parentHeadings.Id">@parentHeadings.Title</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+    
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@GetHeadingDto"
+                     Module="@FacetType.ToString()"
+                     Title="Delete Heading"
+                     Description="Please confirm your action to change the status of the following heading."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteHeading"
+                     CancelLabel="Discard"
+                     SubmitLabel=@(DeleteHeadingDto.IsActive ? "Deactivate" : "Activate")
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="250"
+                          Width="250"
+                          Icon="@(DeleteHeadingDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteHeadingDto.IsActive ? "deactivate" : "activate") the following @FacetType.ToString().ToLower()?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsHeadingDetailsModalOpen)
+    {
+        <ModalLayout T="@GetHeadingDto"
+                     Module="Headings"
+                     Title="@OpenedHeadingDetails.Title"
+                     Description="List out all the sub-headings falling under the following heading"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OpenCloseHeadingDetailsModal"
+                     CancelLabel="Discard">
+            <ul class="list-group mt-3">
+                @foreach (var subHeading in OpenedHeadingDetails.SubHeadings)
+                {
+                    <li class="list-group-item border-0 d-flex gap-3 align-items-center p-0 mb-2">
+                        <i class="fa-solid fa-angles-right"></i>
+                        <MudText 
+                            Typo="Typo.h6" 
+                            HtmlTag="p" 
+                            Class="mb-0">
+                            @subHeading.Title
+                        </MudText>
+                    </li>
+                }
+            </ul>
+        </ModalLayout>
+    }
+}

@@ -1,0 +1,249 @@
+﻿@if (StrategicTraitDetails is null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" DropShadow="false" class="btn btn--md" Variant="Variant.Filled" OnClick="OpenStrategicTraitUploadModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsStrategicTraitUploadModalOpen">Add Strategic Trait</MudButton>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table strategic-trait-table">
+                <thead>
+                    <tr>
+                        <th style="width:5%">#</th>
+                        <th>Name</th>
+                        @if (StrategicType is StrategicType.Strength or StrategicType.Weakness)
+                        {
+                            <th>Opportunities</th>
+                            <th>Threats</th>
+                        }
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var strategicTrait in StrategicTraitDetails.Result)
+                    {
+                        <tr>
+                            <td>@(StrategicTraitDetails.Result.IndexOf(strategicTrait) + 1).</td>
+                            <td>@strategicTrait.Name</td>
+                            @if (StrategicType is StrategicType.Strength or StrategicType.Weakness)
+                            {
+                                <td>
+                                    <div class="trait-btn d-flex align-items-center gap-2">
+                                        @foreach (var opportunity in strategicTrait.Opportunities)
+                                        {
+                                            if (strategicTrait.Opportunities.IndexOf(opportunity) < 2)
+                                            {
+                                                <MudText Typo="Typo.subtitle2" Class="cursor-pointer">@opportunity.Name</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.subtitle2" Class="cursor-pointer" @onclick="() => OpenAllStrategicTraitDetailsModal(strategicTrait, StrategicType.Opportunity)">+@(strategicTrait.Opportunities.Count - 2)</MudText>
+                                                break;
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="trait-btn d-flex align-items-center gap-2">
+                                        @foreach (var threat in strategicTrait.Threats)
+                                        {
+                                            @if (strategicTrait.Threats.IndexOf(threat) < 2)
+                                            {
+                                                <MudText Typo="Typo.subtitle2" Class="cursor-pointer">@threat.Name</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.subtitle2" Class="cursor-pointer" @onclick="() => OpenAllStrategicTraitDetailsModal(strategicTrait, StrategicType.Threat)">+@(strategicTrait.Threats.Count - 2)</MudText>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            }
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenStrategicTraitUpdateModal(strategicTrait.Id)" />
+                                    </MudTooltip>
+                                    @if (StrategicType is StrategicType.Strength or StrategicType.Weakness)
+                                    {
+                                        <MudTooltip Text="Assign Traits" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/assign.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenStrategicTraitDetailsModal(strategicTrait.Id)" />
+                                        </MudTooltip>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="StrategicTraitDetails.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="StrategicTraitDetails.TotalCount" />
+    </div>
+
+    if (IsStrategicTraitUploadModalOpen)
+    {
+        <ModalLayout T="@InsertStrategyDto"
+                     Module="SWOT Analysis"
+                     Title="Upload Strategic Traits"
+                     Description="Upload a new strategic trait, by filling the following form. Please note that the opportunities and threats will not be displayed till they are linked to either a strength or a weakness."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UploadStrategicTrait"
+                     IsDisabled="IsStrategicTraitCreateButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="UploadStrategy.Name" Label="Title" For="@(() => UploadStrategy.Name)" Variant="Variant.Outlined" Placeholder="Enter the trait name" Immediate="true"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="UploadStrategy.Description" />
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudSelect Label="Trait" T="StrategicType" @bind-Value="UploadStrategy.Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@(StrategicType.None)" Disabled="true">Select a Type</MudSelectItem>
+                        @foreach (StrategicType strategy in Enum.GetValues(typeof(StrategicType)))
+                        {
+                            if (strategy == StrategicType.None) continue;
+
+                            <MudSelectItem Value="@(strategy)">@strategy.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsStrategicTraitUpdateModalOpen)
+    {
+        <ModalLayout T="@UpdateStrategyDto"
+                     Module="SWOT Analysis"
+                     Title="Upload Strategic Traits"
+                     Description="Upload a new strategic trait (based on SWOT Traits), by filling the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateStrategicTrait"
+                     IsDisabled="IsStrategicTraitUpdateButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="UpdateStrategyTrait.Name" Label="Title" For="@(() => UpdateStrategyTrait.Name)" Variant="Variant.Outlined" Placeholder="Enter the trait name" Immediate="true"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="UpdateStrategyTrait.Description" />
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudSelect Label="Trait" T="StrategicType" @bind-Value="UpdateStrategyTrait.Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@(StrategicType.None)" Disabled="true">Select a Type</MudSelectItem>
+                        @foreach (StrategicType strategy in Enum.GetValues(typeof(StrategicType)))
+                        {
+                            if (strategy == StrategicType.None) continue;
+
+                            <MudSelectItem Value="@(strategy)">@strategy.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsStrategicTraitDetailsModalOpen)
+    {
+        <ModalLayout T="@GetStrategyDto"
+                     Module="SWOT Analysis"
+                     Title="Strategic Traits for Opportunities and Threats"
+                     Description="Link and upload opportunities and threats to the respective strength or weakness."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UploadStrategicTraitDetails"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4 mb-4" Spacing=8>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="StrategyDetails.Name" Label="Title" For="@(() => StrategyDetails.Name)" Variant="Variant.Outlined" Placeholder="Enter the trait name" ReadOnly="true" />
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="StrategyDetails.Type" Label="Trait" For="@(() => StrategyDetails.Type)" Variant="Variant.Outlined" Placeholder="Enter the trait Type" ReadOnly="true" />
+                </MudItem>
+                <MudDivider />
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudSelect T="Guid"
+                               Label="Opportunities"
+                               MultiSelection="true"
+                               @bind-SelectedValues="SelectedOpportunityIds"
+                               Variant="Variant.Outlined"
+                               AnchorOrigin="Origin.BottomCenter"
+                               ToStringFunc="@(id => TraitDetails.Opportunities.FirstOrDefault(o => o.Id == id)?.Name ?? string.Empty)">
+                        @foreach (var opportunity in TraitDetails.Opportunities)
+                        {
+                            <MudSelectItem T="Guid" Value="@opportunity.Id">
+                                @opportunity.Name
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudSelect T="Guid"
+                               Label="Threats"
+                               MultiSelection="true"
+                               @bind-SelectedValues="SelectedThreatIds"
+                               Variant="Variant.Outlined"
+                               AnchorOrigin="Origin.BottomCenter"
+                               ToStringFunc="@(id => TraitDetails.Threats.FirstOrDefault(o => o.Id == id)?.Name ?? string.Empty)">
+                        @foreach (var threat in TraitDetails.Threats)
+                        {
+                            <MudSelectItem T="Guid" Value="@threat.Id">
+                                @threat.Name
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsAllStrategicTraitDetailsModalOpen)
+    {
+        <ModalLayout T="@GetStrategyDto"
+                     Module="@OpenedStrategy"
+                     Title="@OpenedStrategicDetails.Name"
+                     Description="@OpenedStrategicDetails.Type"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OpenCloseAllStrategicTraitDetailsModal"
+                     CancelLabel="Discard">
+                    <ul class="swot-analysis__list pa-0">
+                        @if (OpenedStrategy == StrategicType.Opportunity.ToString())
+                        {
+                            foreach (var opportunity in OpenedStrategicDetails.Opportunities)
+                            {
+                                <li>@opportunity.Name</li>
+                            }
+                        }
+                        else if (OpenedStrategy == StrategicType.Threat.ToString())
+                        {
+                            foreach (var opportunity in OpenedStrategicDetails.Threats)
+                            {
+                                <li>@opportunity.Name</li>
+                            }
+                        }
+                    </ul>
+        </ModalLayout>
+    }
+}

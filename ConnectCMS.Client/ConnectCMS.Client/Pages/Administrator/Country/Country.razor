@@ -1,0 +1,203 @@
+@page "/countries"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (Countries == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateCountryModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Country</MudButton>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table country-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Flag</th>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Phone Code</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Countries.Result)
+                    {
+                        <tr>
+                            <td>@(Countries.Result.IndexOf(item) + 1).</td>
+                            <td>
+                                <MudImage Src="@item.Icon" Alt="Country Flag" Width="40" Height="40" Class="avatar img-fluid" />
+                            </td>
+                            <td>@item.Name</td>
+                            <td>@item.Code</td>
+                            <td>@item.PhoneCode</td>
+                            <td>
+                                <ActivationStatus IsActive="@item.IsActive" />
+                            </td>
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenCountryUpdateModal(item.Id)" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="@(item.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="@(item.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenCountryDeleteModal(item.Id)" />
+                                    </MudTooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Countries.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Countries.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateCountryDto"
+                     Module="Module"
+                     Title="Add Country"
+                     Description="Add a new country to the system, by filling up the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertCountry"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateButtonDisabled">
+            <MudGrid class="mt-n4" Spacing=8>
+                @if (GlobalCountries.Count > 0)
+                {
+                    <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                        <MudSelect T="string"
+                                   Label="Select a Country"
+                                   Variant="Variant.Outlined"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   ValueChanged="OnCountrySelected"
+                                   FullWidth>
+                            <MudSelectItem Value="@string.Empty" Disabled="true">Select a Country</MudSelectItem>
+                            @foreach (var item in GlobalCountries)
+                            {
+                                <MudSelectItem Value="@item.Name">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                        <MudTextField @bind-Value="CreateCountryDto.Code" Label="Code" Variant="Variant.Outlined" Placeholder="Auto Generated" Disabled="true" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                        <MudTextField @bind-Value="CreateCountryDto.Name" Label="Name" For="@(() => CreateCountryDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the Country Name " Immediate="true"/>
+                    </MudItem>
+                    <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                        <MudTextField @bind-Value="CreateCountryDto.Code" Label="Code" Variant="Variant.Outlined" Placeholder="Enter the Country Code" Immediate="true"/>
+                    </MudItem>
+                }
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="CreateCountryDto.PhoneCode" Label="Phone Code" Variant="Variant.Outlined" Placeholder="Enter the Country Phone Code" Immediate="true"/>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsDetailsModalOpen)
+    {
+        <ModalLayout T="@GetCountryDto"
+                     Module="Module"
+                     Title="Country Details"
+                     Description="View details of an country."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OpenCloseCountryDetailsModal"
+                     CancelLabel="Discard">
+            <MudGrid Spacing="8">
+                <MudItem Class="pt-4" xs=12 md=6 lg=6>
+                    <MudText Class="fs-14 title">Country Name</MudText>
+                    <MudText Class="hfs5 fw-bold data">@GetCountry.Name</MudText>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=6 lg=6>
+                    <MudText Class="fs-14 title">Country Code</MudText>
+                    <MudText Class="hfs5 fw-bold data">@GetCountry.Code</MudText>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="UpdateCountryDto.PhoneCode" Label="Phone Code" Variant="Variant.Outlined" Placeholder="Enter the Country Phone Code" />
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=6 lg=6>
+                    <MudText Class="fs-14 title">Icon</MudText>
+                    <MudImage Src="@GetCountry.Icon" Elevation="10" Height="30" />
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="@UpdateCountryDto"
+                     Module="Module"
+                     Title="Update Country"
+                     Description="Update an existing country, by filling up the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateCountry"
+                     CancelLabel="Discard"
+                     IsDisabled="IsUpdateButtonDisabled"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="UpdateCountryDto.Name" Label="Name" For="@(() => UpdateCountryDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the Country Name " Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="UpdateCountryDto.Code" Label="Code" Variant="Variant.Outlined" Placeholder="Enter the Country Code" Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="UpdateCountryDto.PhoneCode" Label="PhoneCode" Variant="Variant.Outlined" Placeholder="Enter the Country Phone Code" Immediate="true"/>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@GetCountryDto"
+                     Module="Module"
+                     Title=@($"{(DeleteCountryDto.IsActive ? "Activate" : "Deactivate")} Country.")
+                     Description=@($"{(DeleteCountryDto.IsActive ? "Activate" : "deactivate")} the following country, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteCountry"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(DeleteCountryDto.IsActive ? "Deactivate" : "Activate")"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="250"
+                          Width="250"
+                          Icon="@(DeleteCountryDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteCountryDto.IsActive ? "deactivate" : "activate") the following country?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

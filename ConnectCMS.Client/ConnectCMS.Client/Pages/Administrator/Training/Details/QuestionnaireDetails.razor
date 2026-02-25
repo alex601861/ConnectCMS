@@ -1,0 +1,279 @@
+@using CMSTrain.Client.Models.Requests.Configuration.TrainingInspection
+@if (AssignedTrainingInspections == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="questionnaire">
+            <div class="filter d-flex justify-content-end mb-4 flex-wrap">
+                <div class="filter-right d-flex align-items-center gap-x-2">
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="btn btn--md" DropShadow="false" OnClick="OpenTrainingInspectionModal" EndIcon="@Icons.Material.Filled.Add">
+                        Assign Inspections
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-card-wrapper mb-6">
+            <div class="grid row gap-y-4">
+                <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                    <div class="card">
+                        <div class="card-inner__grid">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Question Count
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                                <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                    @TrainingInspectionQuestionnaireSummary.QuestionCount
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                    <div class="card">
+                        <div class="card-inner__grid">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Possible Answer Counts
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                                <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                    @TrainingInspectionQuestionnaireSummary.PossibleAnswerCount
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                    <div class="card">
+                        <div class="card-inner__grid">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Response Count
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                                <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                    @TrainingInspectionQuestionnaireSummary.ResponseCount
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                    <div class="card">
+                        <div class="card-inner__grid">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Pending Analysis Count
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                                <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                    @TrainingInspectionQuestionnaireSummary.PendingAnalysisCount
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Question Uploaded</th>
+                    <th>Phase Count</th>
+                    <th>Uploaded Date</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var inspection in AssignedTrainingInspections.Result)
+                {
+                    <tr>
+                        <td>@(AssignedTrainingInspections.Result.IndexOf(inspection) + 1).</td>
+                        <td>
+                            <div class="d-block">
+                                <div>@inspection.Name</div>
+                                <div class="text-muted fst-italic">@inspection.Type</div>
+                            </div>
+                        </td>
+                        <td>
+                            <MudChip T="string" Variant="Variant.Outlined" Color="@(inspection.IsQuestionnaireUploaded ? Color.Success : Color.Warning)">
+                                @(inspection.IsQuestionnaireUploaded ? "Yes" : "No")
+                            </MudChip>
+                        </td>
+                        <td>@inspection.PhasesCount</td>
+                        <td>@inspection.UploadedDate</td>
+                        <td>
+                            <div class="action">
+                                @if (inspection.IsQuestionnaireUploaded)
+                                {
+                                    <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToQuestionDetailsForm(inspection.QuestionnaireId ?? Guid.Empty)"/>
+                                    </MudTooltip>
+                                    <MudTooltip Text="QR Code" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/qrcode.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenCloseGenerateQuestionnaireQrModal(inspection.QuestionnaireId ?? Guid.Empty, inspection.Type)"/>
+                                    </MudTooltip>
+                                    <MudTooltip Text="Export to Excel" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/download.svg" Alt="Download Icon" Height="18" Width="18" @onclick="() => OpenCloseExportQuestionnaireModal(inspection.QuestionnaireId ?? Guid.Empty)"/>
+                                    </MudTooltip>
+                                }
+                                else
+                                {
+                                    <MudTooltip Text="Upload Questionnaire" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/upload.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToQuestionUploadForm(inspection.TrainingInspectionId)"/>
+                                    </MudTooltip>
+                                }
+                                <MudTooltip Text="Configure Questionnaire Period" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="images/icons/configuration.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OnTrainingInspectionConfiguration(inspection.TrainingInspectionId)"/>
+                                </MudTooltip>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="AssignedTrainingInspections.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="AssignedTrainingInspections.TotalCount" />
+    </div>
+
+    if (IsTrainingInspectionModalOpen)
+    {
+        <ModalLayout T="@GetInspectionDto"
+                     Module="Training"
+                     Title="Inspection Assignment"
+                     Description="Please select the inspections you want to assign to this training."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OnAssignTrainingInspections"
+                     IsDisabled="IsQuestionnaireNotAssignedDisabled"
+                     SubmitLabel="Save"
+                     CancelLabel="Discard">
+            <MudTreeView Hover ReadOnly="false" TriState="true" @bind-SelectedValues="AssignedInspectionIds" SelectionMode="SelectionMode.MultiSelection" CheckBoxColor="Color.Info" Class="tree-view-upload">
+                @foreach (var inspection in AvailableInspections)
+                {
+                    <MudTreeViewItem T="Guid" Text="@inspection.Name" Value="@inspection.Id"/>
+                }
+            </MudTreeView>
+        </ModalLayout>
+    }
+
+    if (IsTrainingInspectionConfigurationModalOpen)
+    {
+        <ModalLayout T="@CMSTrain.Client.Models.Requests.Configuration.TrainingInspection.TrainingInspectionConfiguration"
+                     Module="Training"
+                     Title="Inspection Configuration"
+                     Description="Please configure the access and expire period of the respective inspection."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@SaveTrainingInspectionConfiguration"
+                     SubmitLabel="Save"
+                     CancelLabel="Discard">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    @foreach (var configuration in TrainingInspectionConfigurationModel.Accessibility)
+                    {
+                        <div class="filter d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                            <div class="filter-left d-flex align-items-center gap-x-2">
+                                <MudText Typo="Typo.h6" HtmlTag="h3" Class="fw-bold text-dark">Configuration #@(TrainingInspectionConfigurationModel.Accessibility.IndexOf(configuration) + 1).</MudText>
+                            </div>
+                            <div class="d-flex text-end">
+                                <MudIconButton Variant="Variant.Text" Color="Color.Error" Icon="@Icons.Material.Filled.DeleteOutline" DropShadow="false" OnClick="() => AddOrRemoveTrainingInspectionConfigurationAccessibility(false, configuration)"/>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudDatePicker Label="Access Period"
+                                           Variant="Variant.Outlined"
+                                           DateFormat="dd.MM.yyyy"
+                                           Placeholder="Select an Access Period"
+                                           Date="@configuration.AccessPeriod"
+                                           PickerVariant="PickerVariant.Dialog"
+                                           DateChanged="@(newDate => ChangeExpireDatePeriod(newDate, configuration))"
+                                           IsDateDisabledFunc="@((DateTime dt) => dt < ValidateAccessPeriod(configuration))"/>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudDatePicker Label="Access Period"
+                                           Variant="Variant.Outlined"
+                                           DateFormat="dd.MM.yyyy"
+                                           Placeholder="Select an Expired Period"
+                                           PickerVariant="PickerVariant.Dialog"
+                                           @bind-Date="configuration.ExpirePeriod"
+                                           IsDateDisabledFunc="@((DateTime dt) => dt < configuration.AccessPeriod)"/>
+                        </div>
+                    }
+                    <div class="filter d-flex justify-content-end mb-2">
+                        <div class="d-flex text-end">
+                            <MudIconButton Variant="Variant.Text" Color="Color.Success" Icon="@Icons.Material.Filled.Add" DropShadow="false" OnClick="() => AddOrRemoveTrainingInspectionConfigurationAccessibility(true, new AbstractTrainingInspectionConfigurationDto())"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsQuestionnaireQrCodeModalOpen)
+    {
+        <ModalLayout T="@QuestionnaireQrCodeDto"
+                     Module="Questionnaires"
+                     Title="QR Code"
+                     Description="Please scan the following QR code to access the following questionnaire answer upload form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DownloadQuestionnaireQrCode"
+                     SubmitLabel="Download"
+                     CancelLabel="Discard"
+                     IsDisabled="@string.IsNullOrEmpty(QrCodeImage)">
+            <div class="col-lg-6 col-md-7 mx-auto">
+                @if (string.IsNullOrEmpty(QrCodeImage))
+                {
+                    <Loader/>
+
+                    <div class="text-center">
+                        <LordIcon Icon="@Animations.Regular.Puzzle"
+                                  Height="200"
+                                  Width="200"/>
+                        <MudText Class="hfs4 data fw-600">
+                            Sorry, the QR Code for the following resource material could not be generated.
+                        </MudText>
+                    </div>
+                }
+                else
+                {
+                    <MudImage Src="@QrCodeImage" Width="450" Height="450" Alt="Resource Material QR Code" Elevation="25" Class="img-fluid"/>
+                }
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsExportQuestionnaireModalOpen)
+    {
+        <ModalLayout T="@GetTrainingInspectionDetailsDto"
+                     Module="Questionnaires"
+                     Title="Export Details"
+                     Description="Please select the respective phase and click on download to export the respective questionnaire in excel format."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@ExportQuestionnaireDetails"
+                     CancelLabel="Discard"
+                     SubmitLabel="Download">
+            <div class="col-lg-12 col-md-12">
+                <MudSelect T="int" @bind-Value="@Phase" Label="Phase" Dense="true" Variant="Variant.Outlined" Class="ml-2" T="int" AnchorOrigin="Origin.BottomCenter">
+                    @for (var i = 1; i <= TrainingInspection.Phases; i++)
+                    {
+                        var index = i;
+                        <MudSelectItem Value="@index">@index</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </ModalLayout>
+    }
+}

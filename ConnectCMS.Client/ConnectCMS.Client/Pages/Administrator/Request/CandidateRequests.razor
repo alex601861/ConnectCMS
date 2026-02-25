@@ -1,0 +1,141 @@
+﻿@page "/pending-requests"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="approval-matrix">
+    <div class="data-card-wrapper mb-6">
+        <div class="grid row gap-y-4">
+            <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                <div class="card">
+                    <div class="card-inner__grid">
+                        <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                            Total Requests
+                        </MudText>
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                            <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                @GetTrainingRequestsCount.TotalRequests
+                            </MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Success" Class="rate d-flex align-items-center gap-3">
+                                <MudImage Src="images/icons/graph-up.svg" Height="24" Width="24" Alt="Graph Arrow Up" />
+
+                                @if (GetTrainingRequestsCount.TotalRequestsGrowthFromLastWeek >= 0)
+                                {
+                                    @GetTrainingRequestsCount.TotalRequestsGrowthFromLastWeek @("%")
+                                }
+                                else
+                                {
+                                    @GetTrainingRequestsCount.TotalRequestsGrowthFromLastWeek @("%")
+                                }
+                            </MudText>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                <div class="card">
+                    <div class="card-inner__grid">
+                        <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                            Pending Requests
+                        </MudText>
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                            <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                @GetTrainingRequestsCount.TotalPendingRequests
+                            </MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Error" Class="rate d-flex align-items-center gap-3">
+                                <MudImage Src="images/icons/graph-down.svg" Height="24" Width="24" Alt="Graph Arrow Down" />
+
+                                @if (GetTrainingRequestsCount.TotalPendingRequestsGrowthFromLastWeek >= 0)
+                                {
+                                    @GetTrainingRequestsCount.TotalPendingRequestsGrowthFromLastWeek @("%")
+                                }
+                                else
+                                {
+                                    @GetTrainingRequestsCount.TotalPendingRequestsGrowthFromLastWeek @("%")
+                                }
+                            </MudText>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                <div class="card">
+                    <div class="card-inner__grid">
+                        <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                            Rejected Requests
+                        </MudText>
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                            <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                @GetTrainingRequestsCount.TotalRejectedRequests
+                            </MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Error" Class="rate d-flex align-items-center gap-3">
+                                <MudImage Src="images/icons/graph-down.svg" Height="24" Width="24" Alt="Graph Arrow Down" />
+
+                                @if (GetTrainingRequestsCount.TotalRejectedRequestsGrowthFromLastWeek >= 0)
+                                {
+                                    @GetTrainingRequestsCount.TotalRejectedRequestsGrowthFromLastWeek @("%")
+                                }
+                                else
+                                {
+                                    @GetTrainingRequestsCount.TotalRejectedRequestsGrowthFromLastWeek @("%")
+                                }
+                            </MudText>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="item col-xxl-3 col-lg-3 col-md-6 col-12">
+                <div class="card">
+                    <div class="card-inner__grid">
+                        <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                            Accepted Requests
+                        </MudText>
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-x-3 gap-y-3">
+                            <MudText Typo="Typo.h2" Class="card-data text-dark">
+                                @GetTrainingRequestsCount.TotalAcceptedRequests
+                            </MudText>
+                            <MudText Typo="Typo.body1" Color="Color.Error" Class="rate d-flex align-items-center gap-3">
+                                <MudImage Src="images/icons/graph-down.svg" Height="24" Width="24" Alt="Graph Arrow Down" />
+
+                                @if (GetTrainingRequestsCount.TotalAcceptedRequestsGrowthFromLastWeek >= 0)
+                                {
+                                    @GetTrainingRequestsCount.TotalAcceptedRequestsGrowthFromLastWeek @("%")
+                                }
+                                else
+                                {
+                                    @GetTrainingRequestsCount.TotalAcceptedRequestsGrowthFromLastWeek @("%")
+                                }
+                            </MudText>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <MudTabs Elevation="0" Class="gap-3 mt-8" @bind-ActivePanelIndex="ActivePanelIndex">
+        <MudTabPanel Text="Pending" BadgeData="@ApprovalMatrixCountDto.PendingCount" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 0)
+            {
+                <RequestDetails RequestAction="Constants.RequestAction.Pending"
+                                TrainingId="TrainingId"
+                                OnTrainingSelected="HandleTrainingSelection" />
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Approved" BadgeData="@ApprovalMatrixCountDto.ApprovedCount" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 1)
+            {
+                <RequestDetails RequestAction="Constants.RequestAction.Accepted"
+                                TrainingId="TrainingId"
+                                OnTrainingSelected="HandleTrainingSelection" />
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Rejected" BadgeData="@ApprovalMatrixCountDto.RejectedCount" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 2)
+            {
+                <RequestDetails RequestAction="Constants.RequestAction.Rejected"
+                                TrainingId="TrainingId"
+                                OnTrainingSelected="HandleTrainingSelection" />
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>

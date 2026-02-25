@@ -1,0 +1,92 @@
+﻿@if (TrainingCertificationConfiguration == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="certification-detail inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left"></div>
+            <div class="filter-right">
+                <MudSwitch T="bool" Value="TrainingCertificationTriggerConfiguration.Trigger.IsManual" ValueChanged="@(v => OnCertificationTriggerValueChanged(v))" Color="Color.Secondary">
+                    @(TrainingCertificationTriggerConfiguration.Trigger.IsManual ? "Manual" : "Automatic")
+                </MudSwitch>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" StartIcon="@Icons.Material.Filled.ViewModule" OnClick="OpenCloseCertificationTemplateModal">
+                    View Certificate Template
+                </MudButton>
+            </div>
+        </div>
+        <EditForm Model="TrainingCertificationConfigurationDetails" OnValidSubmit="@UploadTrainingCertificationDetails">
+            <DataAnnotationsValidator />
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-4 col-md-6 col-12">
+                        <MudColorPicker Label="Primary Color" 
+                                        ColorPickerView="ColorPickerView.Spectrum" 
+                                        @bind-Value="@TrainingCertificationColorConfiguration.PrimaryColor" 
+                                        For="@(() => TrainingCertificationColorConfiguration.PrimaryColor)" 
+                                        Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-4 col-md-6 col-12">
+                        <MudColorPicker Label="Secondary Color"
+                                        ColorPickerView="ColorPickerView.Spectrum"
+                                        @bind-Value="@TrainingCertificationColorConfiguration.SecondaryColor"
+                                        For="@(() => TrainingCertificationColorConfiguration.SecondaryColor)"
+                                        Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-4 col-md-6 col-12">
+                        <MudColorPicker Label="Tertiary Color"
+                                        ColorPickerView="ColorPickerView.Spectrum"
+                                        @bind-Value="@TrainingCertificationColorConfiguration.TertiaryColor"
+                                        For="@(() => TrainingCertificationColorConfiguration.TertiaryColor)"
+                                        Variant="Variant.Outlined" />
+                    </div>
+                    <div class="col-xl-4 col-md-6 col-12">
+                        <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                        FileUploadedMessage="Upload your primary logo"
+                                        UploadType="@Constants.Uploads.Image"
+                                        OnFileUploaded="OnHandlePrimaryLogoUpload"/>
+                    </div>
+                    <div class="col-xl-4 col-md-6 col-12">
+                        <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                        FileUploadedMessage="Upload your secondary logo"
+                                        UploadType="@Constants.Uploads.Image"
+                                        OnFileUploaded="OnHandleSecondaryLogoUpload"/>
+                    </div>
+                    <div class="col-xl-4 col-md-6 col-12">
+                        <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                        FileUploadedMessage="Upload your trainer's signature"
+                                        UploadType="@Constants.Uploads.Image"
+                                        OnFileUploaded="OnHandleTrainerSignatureUpload"/>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex align-items-end justify-content-end">
+                            <MudButton DropShadow="false"
+                                       Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       Class="btn btn--md"
+                                       ButtonType="ButtonType.Submit">
+                                Submit
+                            </MudButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+        
+        @if (IsCertificationTemplateModalOpen)
+        {
+            <ModalLayout T="@QuestionnaireQrCodeDto"
+                         Module="Certifications"
+                         Title="Certificate Template"
+                         Description="Please verify the template based on your provided inputs."
+                         SubmitColor="Color.Primary"
+                         Size="modal-xl"
+                         Style="max-width: 1540px;"
+                         OnSave="@OpenCloseCertificationTemplateModal"
+                         CancelLabel="Discard">
+                <CertificationInformation Certification="CertificationTemplateDetails" />
+            </ModalLayout>
+        }
+    </div>
+}

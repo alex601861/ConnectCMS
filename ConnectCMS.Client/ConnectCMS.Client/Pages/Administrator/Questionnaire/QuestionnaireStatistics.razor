@@ -1,0 +1,76 @@
+﻿<div class="questionnaire-statistics">
+    <div class="inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <Filter OnFilterApplication="OnStatisticsFilter">
+                    <MudSelect T="int" @bind-Value="@Phase" Label="Phase" Dense="true" Variant="Variant.Outlined" Class="ml-2" T="int" AnchorOrigin="Origin.BottomCenter">
+                        @for (var i = 1; i <= TrainingInspection.Phases; i++)
+                        {
+                            var index = i;
+                            <MudSelectItem Value="@index">@index</MudSelectItem>
+                        }
+                    </MudSelect>
+                </Filter>
+            </div>
+            <div class="filter-right">
+                <MudText Typo="Typo.body2" HtmlTag="h4" Class="text-dark mb-4">You have @GeneralQuestionnaireAnswer.TotalResponses response(s).</MudText>
+            </div>
+        </div>
+        <div class="questions d-flex flex-column gap-y-6">
+            <div class="accordion custom-accordion d-flex flex-column gap-y-6" id="accordionPanelsStayOpen">
+                @foreach (var generalAnswer in GeneralQuestionnaireAnswer.GeneralAnswers)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="panel-question_@generalAnswer.QuestionId">
+                            <button class="accordion-button text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#question_@generalAnswer.QuestionId" aria-expanded="true" aria-controls="question_@generalAnswer.QuestionId">
+                                @(GeneralQuestionnaireAnswer.GeneralAnswers.IndexOf(generalAnswer) + 1): @generalAnswer.Title
+                            </button>
+                        </h2>
+                        <div id="question_@generalAnswer.QuestionId" class="accordion-collapse collapse show" aria-labelledby="panel-question_@generalAnswer.QuestionId">
+                            <div class="accordion-body">
+                                @if (generalAnswer.QuestionType != QuestionType.LongQuestion.ToString() && generalAnswer.QuestionType != QuestionType.ShortQuestion.ToString())
+                                {
+                                    <div class="d-flex flex-column gap-y-6 w-100">
+                                        <QuestionnaireNotation QuestionType="@generalAnswer.QuestionType" />
+                                        <div class="graph-representation col-xxl-8 col-xl-10 col-12 mx-auto">
+                                        @if (generalAnswer.QuestionType == QuestionType.SingleSelectMcq.ToString())
+                                        {
+                                            <BarChart T="AnswerResponseDetails"
+                                                      Items="generalAnswer.Answers"
+                                                      Title="Scores"
+                                                      MaxYValue="5"
+                                                      ShowLegend="false"
+                                                      XValue="@(e => e.Answer)"
+                                                      YValue="@(e => e.Sum(x => (decimal)x.Count))" />
+                                        }
+                                        else if (generalAnswer.QuestionType == QuestionType.MultiSelectMcq.ToString() || generalAnswer.QuestionType == QuestionType.Rating.ToString())
+                                        {
+                                            <DonutChart T="AnswerResponseDetails" Items="generalAnswer.Answers"
+                                                        XValue="@(e => e.Answer)"
+                                                        YValue="@(e => (decimal)e.Count)" />
+                                        }
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                        Answers
+                                        <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                    </MudText>
+                                    <div class="d-flex flex-column gap-y-2 w-100">
+                                        @foreach (var answer in generalAnswer.Answers)
+                                        {
+                                            <MudTextField @bind-Value="answer.Answer" Variant="Variant.Outlined" Placeholder="Enter the answer title" ReadOnly="true" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

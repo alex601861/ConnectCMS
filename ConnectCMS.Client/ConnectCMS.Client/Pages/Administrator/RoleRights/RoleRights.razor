@@ -1,0 +1,77 @@
+﻿@page "/role-rights"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<MudCard Outlined="true" Class="pa-4">
+    <MudCardContent>
+        <MudText Typo="Typo.h4" Class="mb-4">Assign Role Menus</MudText>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="8">
+                <MudSelect T="Guid" Variant="Variant.Outlined" @bind-Value="@RoleId" FullWidth="true" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Role</MudSelectItem>
+                    @foreach (var item in Roles)
+                    {
+                        <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-items-center justify-content-md-end mt-2 mt-md-0">
+                <MudButton DropShadow="false" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="Size.Medium" @onclick="HandleRoleMenuSearch" Disabled="@(RoleId == Guid.Empty)">
+                    Search
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@if (MenuRightsResponse != null)
+{
+    <MudGrid Class="mt-4" Spacing="3">
+        <MudItem xs="12" md="8">
+            <MudPaper Elevation="1" Class="pa-4">
+                <MudTreeView Hover ReadOnly="false" TriState="true" @bind-SelectedValues="SelectedValues" SelectionMode="SelectionMode.MultiSelection" CheckBoxColor="Color.Info">
+                    @foreach (var menu in MenuRightsResponse)
+                    {
+                        <TreeViewLayout Item="menu" />
+                    }
+                </MudTreeView>
+            </MudPaper>
+            <MudCard Outlined="true" Class="mt-3">
+                <MudCardActions Class="justify-content-end pa-3">
+                    <MudButton DropShadow="false" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Send" Size="Size.Large" @onclick="SubmitSelectedValues">
+                        Submit
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudCard Outlined="true" Class="pa-4">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5" Class="mb-3">Users in Role</MudText>
+                    <MudGrid Spacing="2">
+                        @foreach (var user in GetRoleUsers)
+                        {
+                        <MudItem xs="12" Class="d-flex align-items-center mb-3">
+                            <MudAvatar Size="Size.Medium" Color="Color.Primary" Class="me-3">
+                                @if (string.IsNullOrEmpty(user.ImageUrl))
+                                {
+                                    @user.Name.ToUpper().FirstOrDefault()
+                                }
+                                else
+                                {
+                                    <MudImage Src="@user.ImageUrl" Alt="User Profile Picture" Class="rounded-circle" />
+                                }
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.h6">@user.Name</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@user.Email</MudText>
+                            </div>
+                        </MudItem>
+                        }
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}

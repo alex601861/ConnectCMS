@@ -1,0 +1,65 @@
+﻿@if (PersonalityTraits == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table strategic-trait-table">
+                <thead>
+                <tr>
+                    <th style="width:5%">#</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in PersonalityTraits.Result)
+                {
+                    <tr>
+                        <td>@(PersonalityTraits.Result.IndexOf(item) + 1).</td>
+                        <td>@item.Title</td>
+                        <td>@((MarkupString)item.Description)</td>
+                        <td>
+                            <ActivationStatus Variant="Variant.Outlined" IsActive="true"/>
+                        </td>
+                        <td>
+                            <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenTraitUpdateModal(item.Id)"/>
+                            </MudTooltip>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="@UpdatePersonalityTraitDto"
+                     Module="@TraitType.ToString()"
+                     Title="Update Trait"
+                     Description="Please fill in the following form to update the Trait."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateTrait"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="UpdatePersonalityTraitDto.Description"/>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+}

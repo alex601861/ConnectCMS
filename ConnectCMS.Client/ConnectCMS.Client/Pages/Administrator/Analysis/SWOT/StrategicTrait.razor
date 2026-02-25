@@ -1,0 +1,34 @@
+﻿@page "/strategic-traits"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div>
+    <MudTabs Elevation="0" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+        <MudTabPanel Text="Strengths" BadgeData="@StrategicTraitCountDto.Strengths" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 0)
+            {
+                <Traits StrategicType="StrategicType.Strength" OnTraitCountUpdate="HandleStrategicTraitCounts"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Weaknesses" BadgeData="@StrategicTraitCountDto.Weaknesses" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 1)
+            {
+                <Traits StrategicType="StrategicType.Weakness" OnTraitCountUpdate="HandleStrategicTraitCounts"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Opportunities" BadgeData="@StrategicTraitCountDto.Opportunities" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 2)
+            {
+                <Traits StrategicType="StrategicType.Opportunity" OnTraitCountUpdate="HandleStrategicTraitCounts"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Threats" BadgeData="@StrategicTraitCountDto.Threats" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 3)
+            {
+                <Traits StrategicType="StrategicType.Threat" OnTraitCountUpdate="HandleStrategicTraitCounts"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>
+

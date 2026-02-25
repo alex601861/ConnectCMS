@@ -1,0 +1,56 @@
+﻿<div class="mb-0">
+    @switch (Type)
+    {
+        case Models.Constants.QuestionType.SingleSelectMcq:
+            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark fw-bold mb-2">
+                Bar Graph Notation
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-normal">
+                Single Select MCQ
+            </MudText>
+            break;
+        case Models.Constants.QuestionType.MultiSelectMcq:
+        case Models.Constants.QuestionType.Rating:
+            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark fw-bold mb-2">
+                Doughnut Graph Notation
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-normal">
+                @if (Type == Models.Constants.QuestionType.MultiSelectMcq)
+                {
+                    <span>Multi Select MCQ</span>
+                }
+                else
+                {
+                    <span>Ratings</span>
+                }
+            </MudText>
+            break;
+        default:
+            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark fw-bold">
+                Answers
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-normal">
+                Long Question
+            </MudText>
+            break;
+    }
+</div>
+
+<div class="note-wrapper">
+    <MudText Typo="Typo.subtitle1" Class="text-dark mb-2">Note:</MudText>
+    <MudText Typo="Typo.body2" Class="text-normal">
+        @switch (Type)
+        {
+            case Models.Constants.QuestionType.SingleSelectMcq:
+                <em>This bar-graph represents the distribution of responses to a survey, based on agreement levels.</em>
+                break;
+            case Models.Constants.QuestionType.MultiSelectMcq:
+            case Models.Constants.QuestionType.Rating:
+                <em>This pie-chart represents the distribution of responses to a survey, based on agreement levels.</em>
+                break;
+            default:
+                <em>View out all the answers from the respondents, based on agreement levels.</em>
+                break;
+        }
+    </MudText>
+</div>

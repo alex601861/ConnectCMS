@@ -1,0 +1,354 @@
+﻿@if (Trainings == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="inner-padding training">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange" />
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateTrainingModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Training</MudButton>
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="training-grid row">
+                @foreach (var training in Trainings.Result)
+                {
+                    <div class="col-xxl-3 col-lg-4 col-md-6 col-12 p-2">
+                        <MudCard Class="training-card custom-card" Elevation="0">
+                            <div class="position-relative">
+                                <MudImage Src="@training.ImageUrl" Width="330" Height="208" Class="img-fluid w-100 card__image"/>
+                                <div class="position-absolute top-0 m-2" style="right: 0;">
+                                    @if (training.IsActive)
+                                    {
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Success" Height="26">
+                                            Active
+                                        </MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Error" Height="26">
+                                            Inactive
+                                        </MudChip>
+                                    }
+                                </div>
+                            </div>
+                            <MudCardContent Class="pa-0">
+                                <MudPaper Elevation="0" Class="d-flex justify-content-between align-items-center mb-2 bg-transparent">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="text-dark fw-bold">@training.Title</MudText>
+                                    <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomLeft" AriaLabel="Training Format Menu">
+                                        <MudMenuItem @onclick="() => NavigateToDetails(training.Id)">Details</MudMenuItem>
+                                        <MudMenuItem @onclick="() => OpenTrainingUpdateModal(training.Id)">Edit</MudMenuItem>
+                                        <MudMenuItem @onclick="() => OpenTrainingDeleteModal(training.Id)">
+                                            @(training.IsActive ? "Deactivate" : "Activate")
+                                        </MudMenuItem>
+                                    </MudMenu>
+                                </MudPaper>
+                                <div class="text-ellipsis">
+                                    @((MarkupString)training.Description)
+                                </div>
+                                <MudDivider Class="my-3"/>
+                                <AssignedTrainerDetails AssignedTrainers="@training.AssignedTrainers"/>
+                                <div class="date d-flex align-items-center gap-x-2 mb-3">
+                                    <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20"/>
+                                    <MudText Typo="Typo.subtitle2" Class="text-normal">@training.StartDate - @training.EndDate</MudText>
+                                </div>
+                                <div class="location d-flex align-items-center gap-x-2">
+                                    <MudImage Src="images/icons/location.svg" Alt="Blue Location Icon" Width="20" Height="20"/>
+                                    <MudText Typo="Typo.subtitle2" Class="text-normal">@training.LocationDetails</MudText>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <div class="table-responsive">
+                    <table class="table roles-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var trainings in Trainings.Result)
+                        {
+                            <tr>
+                                <td>@(Trainings.Result.IndexOf(trainings) + 1).</td>
+                                <td>@trainings.Title (@trainings.AssignedTrainers.ClassCount)</td>
+                                <td>@trainings.LocationDetails</td>
+                                <td>@trainings.StartDate - @trainings.EndDate</td>
+                                <td>
+                                    @if (trainings.IsActive)
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success" Height="26">
+                                            Active
+                                        </MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error" Height="26">
+                                            Inactive
+                                        </MudChip>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="action">
+                                        <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToDetails(trainings.Id)" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenTrainingUpdateModal(trainings.Id)"/>
+                                        </MudTooltip>
+                                        <MudTooltip Text="@(trainings.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="@(trainings.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenTrainingDeleteModal(trainings.Id)" />
+                                        </MudTooltip>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        
+        <Pagination PageCount="Trainings.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Trainings.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateTrainingDto"
+                     Module="Module"
+                     Title="Add Training"
+                     Description="Create a new training, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertTraining"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateTrainingButtonDisabled">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="CreateTrainingDto.Title" Label="Title" For="@(() => CreateTrainingDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the training title" Immediate="true"></MudTextField>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudSelect @bind-Value="CreateTrainingDto.TrainingFormatId"
+                               Label="Training Format"
+                               Variant="Variant.Outlined"
+                               AnchorOrigin="Origin.BottomCenter"
+                               FullWidth>
+                        <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Training Format</MudSelectItem>
+                        @foreach (var item in TrainingFormats)
+                        {
+                            <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem class="pt-4" xs="12" md="12">
+                    <TextEditor @bind-Value="CreateTrainingDto.Description"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudDatePicker Label="Start Date"
+                                   Variant="Variant.Outlined"
+                                   DateFormat="dd.MM.yyyy"
+                                   Placeholder="Select a Start Date"
+                                   PickerVariant="PickerVariant.Dialog"
+                                   DateChanged="OnCreateTrainingStartDateChange"
+                                   IsDateDisabledFunc="@((DateTime dt) => dt < DateTime.Today)"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudDatePicker @bind-Date="CreateTrainingDto.EndDate"
+                                   Label="End Date"
+                                   Variant="Variant.Outlined"
+                                   Placeholder="Select an End Date"
+                                   DateFormat="dd.MM.yyyy"
+                                   PickerVariant="PickerVariant.Dialog"
+                                   IsDateDisabledFunc="@((DateTime dt) => dt < CreateTrainingDto.StartDate)"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="CreateTrainingDto.LocationDetails"
+                                  Label="Location Details"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Enter the training location details"
+                                  Immediate="true"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                  OnAdornmentClick="@(() =>ToggleTrainingLocation(true))"
+                                  FullWidth/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                    FileUploadedMessage="Upload your image"
+                                    UploadType="@Constants.Uploads.Image"
+                                    OnFileUploaded="HandleCreateTrainingImageUpload"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="CreateTrainingDto.Latitude"
+                                  Label="Latitude"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Enter the location venue latitude"
+                                  Immediate="true"
+                                  InputType="InputType.Number"
+                                  FullWidth />
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="CreateTrainingDto.Longitude"
+                                  Label="Longitude"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Enter the location venue longitude"
+                                  Immediate="true"
+                                  InputType="InputType.Number"
+                                  FullWidth />
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <div class="d-flex justify-content-end">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="btn custom-btn" DropShadow="false" @onclick="() => NavigateToCoordinates(true)" Disabled="@(CreateTrainingDto.Latitude == null || CreateTrainingDto.Longitude == null)">
+                            View Coordinates
+                        </MudButton>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="@UpdateTrainingDto"
+                     Module="Module"
+                     Title="Update Training"
+                     Description="Update an existing training, by filling in the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateTraining"
+                     IsDisabled="IsUpdateTrainingButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="UpdateTrainingDto.Title" Label="Title" For="@(() => UpdateTrainingDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the training title" Immediate="true"></MudTextField>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudSelect @bind-Value="UpdateTrainingDto.TrainingFormatId"
+                               Label="Training Format"
+                               Variant="Variant.Outlined"
+                               AnchorOrigin="Origin.BottomCenter"
+                               FullWidth>
+                        <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Training Format</MudSelectItem>
+                        @foreach (var item in TrainingFormats)
+                        {
+                            <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem class="pt-4" xs="12" md="12">
+                    <TextEditor @bind-Value="UpdateTrainingDto.Description"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudDatePicker Label="Start Date"
+                                   Variant="Variant.Outlined"
+                                   DateFormat="dd.MM.yyyy"
+                                   Date="UpdateTrainingDto.StartDate"
+                                   DateChanged="OnUpdateTrainingStartDateChange"
+                                   PickerVariant="PickerVariant.Dialog"
+                                   IsDateDisabledFunc="@((DateTime dt) => dt < DateTime.Today)"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudDatePicker @bind-Date="UpdateTrainingDto.EndDate"
+                                   Label="End Date"
+                                   Variant="Variant.Outlined"
+                                   DateFormat="dd.MM.yyyy"
+                                   PickerVariant="PickerVariant.Dialog"
+                                   IsDateDisabledFunc="@((DateTime dt) => dt < UpdateTrainingDto.StartDate)"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="UpdateTrainingDto.LocationDetails"
+                                  Label="Location Details"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Enter the training location details"
+                                  Immediate="true"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.LocationOn"
+                                  OnAdornmentClick="@(() =>ToggleTrainingLocation(false))"
+                                  FullWidth />
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                    FileUploadedMessage="Upload your image"
+                                    UploadType="@Constants.Uploads.Image"
+                                    OnFileUploaded="HandleUpdateTrainingImageUpload"/>
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="UpdateTrainingDto.Latitude"
+                                  Label="Latitude"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Enter the location venue latitude"
+                                  Immediate="true"
+                                  InputType="InputType.Number"
+                                  FullWidth />
+                </MudItem>
+                <MudItem class="pt-4" xs=12 md=6 xl=6>
+                    <MudTextField @bind-Value="UpdateTrainingDto.Longitude"
+                                  Label="Longitude"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Enter the location venue longitude"
+                                  Immediate="true"
+                                  InputType="InputType.Number"
+                                  FullWidth />
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <div class="d-flex justify-content-end">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="btn custom-btn" DropShadow="false" @onclick="() => NavigateToCoordinates(false)" Disabled="@(UpdateTrainingDto.Latitude == null || UpdateTrainingDto.Longitude == null)">
+                            View Coordinates
+                        </MudButton>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@GetTrainingDto"
+                     Module="Module"
+                     Title=@($"{(DeleteTrainingDto.IsActive ? "Activate" : "Deactivate")} Training.")
+                     Description=@($"{(DeleteTrainingDto.IsActive ? "Activate" : "deactivate")} the following training, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteTraining"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(DeleteTrainingDto.IsActive ? "Deactivate" : "Activate")"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(DeleteTrainingDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteTrainingDto.IsActive ? "deactivate" : "activate") the following training?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

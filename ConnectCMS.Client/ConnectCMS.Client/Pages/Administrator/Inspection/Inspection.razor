@@ -1,0 +1,251 @@
+﻿@page "/inspections"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (Inspections == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="inspection inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField @bind-Value="Search" Placeholder="Search" Immediate="true" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange" />
+                <MudButton Color="Color.Primary" DropShadow="false" class="btn btn--md" Variant="Variant.Filled" OnClick="OpenCreateInspectionModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Inspection</MudButton>
+            </div>
+        </div>
+        
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="inspection-grid row gap-y-5">
+                @foreach (var inspection in Inspections.Result)
+                {
+                    <div class="col-xxl-3 col-lg-4 col-md-6 col-12">
+                        <MudCard Class="inspection-card custom-card" Elevation="0">
+                            <div class="position-relative">
+                                <MudImage Src="@inspection.ImageUrl" Width="330" Height="208" Class="img-fluid w-100 card__image" />
+                                <div class="position-absolute top-0 m-2" style="right: 0;">
+                                    @if (inspection.HasAssignedQuestionnaire)
+                                    {
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Primary" Height="26">
+                                            Questionnaires
+                                        </MudChip>
+                                    }
+                                </div>
+                            </div>
+                            <MudCardContent Class="pa-0">
+                                <MudPaper Elevation="0" Class="d-flex justify-content-between bg-transparent mb-2">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="fw-bold">@inspection.Name</MudText>
+                                    <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomLeft" AriaLabel="Training Format Menu">
+                                        <MudMenuItem OnClick="() => NavigateToInspectionQuestionnaire(inspection)">
+                                            @if (inspection.HasAssignedQuestionnaire)
+                                            {
+                                                <span>View Questionnaire</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Assign Questionnaire</span>
+                                            }
+                                        </MudMenuItem>
+                                    </MudMenu>
+                                </MudPaper>
+                                <MudText Typo="Typo.body2" Class="text-normal">
+                                    @((MarkupString)inspection.Description)
+                                </MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table roles-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var inspection in Inspections.Result)
+                    {
+                        <tr>
+                            <td>@(Inspections.Result.IndexOf(inspection) + 1).</td>
+                            <td>@inspection.Name</td>
+                            <td>@((MarkupString)inspection.Description)</td>
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="Questionnaire" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/eye.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => NavigateToInspectionQuestionnaire(inspection)"/>
+                                    </MudTooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <Pagination PageCount="Inspections.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Inspections.TotalCount" />
+    </div>
+    
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateInspectionDto"
+                     Module="Inspection and Analysis"
+                     Title="Create Inspection"
+                     Description="Please fill in the following form to create a new inspection."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertInspection"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateInspectionButtonDisabled">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudTextField @bind-Value="CreateInspectionDto.Name" Label="Name" For="@(() => CreateInspectionDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the Inspection Name " Immediate="true"/>
+                    </div>
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <TextEditor @bind-Value="CreateInspectionDto.Description" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Type" T="InspectionType" @bind-Value="CreateInspectionDto.InspectionType" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(InspectionType.None)" Disabled="true">Select a Type</MudSelectItem>
+                            @if (Inspections.Result.All(x => x.Type.ToInspectionTypeString() != InspectionType.SwotAnalysis))
+                            {
+                                <MudSelectItem Value="@(InspectionType.SwotAnalysis)">SWOT Analysis</MudSelectItem>
+                            }
+                            @if (Inspections.Result.All(x => x.Type.ToInspectionTypeString() != InspectionType.PersonalityTest))
+                            {
+                                <MudSelectItem Value="@(InspectionType.PersonalityTest)">Personality Test</MudSelectItem>
+                            }
+                            @if (Inspections.Result.All(x => x.Type.ToInspectionTypeString() != InspectionType.Feedback))
+                            {
+                                <MudSelectItem Value="@(InspectionType.Feedback)">Feedbacks</MudSelectItem>
+                            }
+                            @if (Inspections.Result.All(x => x.Type.ToInspectionTypeString() != InspectionType.PersonalAssessment))
+                            {
+                                <MudSelectItem Value="@(InspectionType.PersonalAssessment)">Assessments</MudSelectItem>
+                            }
+                            <MudSelectItem Value="@(InspectionType.Others)">Other</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                        FileUploadedMessage="Upload your inspection image"
+                                        UploadType="@Constants.Uploads.Image"
+                                        OnFileUploaded="OnHandleInspectionUpload" />
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsDetailsModalOpen)
+    {
+        <ModalLayout T="GetInspectionDto"
+                     Module="Inspection and Analysis"
+                     Title="Inspection Details"
+                     Description="View the details of the following inspection analysis"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OpenCloseInspectionDetailsModal"
+                     CancelLabel="Discard">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="GetInspection.Name" Label="Name" For="@(() => GetInspection.Name)" Variant="Variant.Outlined" Placeholder="Enter the Inspection Name" ReadOnly="true"/>
+                    </div>
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <TextEditor @bind-Value="GetInspection.Description" />
+                    </div>
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudTextField @bind-Value="GetInspection.Type" Label="Type" For="@(() => GetInspection.Type)" Variant="Variant.Outlined" Placeholder="Enter the Inspection Type" ReadOnly="true"/>
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="UpdateInspectionDto"
+                     Module="Inspection"
+                     Title="Update Inspection"
+                     Description="Please fill in the following form to update the inspection."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateInspection"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UpdateInspectionDto.Name" Label="Name" For="@(() => CreateInspectionDto.Name)" Variant="Variant.Outlined" Placeholder="Enter the Inspection Name " Immediate="true"/>
+                    </div>
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <TextEditor @bind-Value="UpdateInspectionDto.Description" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Type" T="InspectionType" @bind-Value="UpdateInspectionDto.InspectionType" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(InspectionType.None)" Disabled="true">Select a Type</MudSelectItem>
+                            <MudSelectItem Value="@(InspectionType.SwotAnalysis)">SWOT Analysis</MudSelectItem>
+                            <MudSelectItem Value="@(InspectionType.PersonalityTest)">Personality Test</MudSelectItem>
+                            <MudSelectItem Value="@(InspectionType.Feedback)">Feedbacks</MudSelectItem>
+                            <MudSelectItem Value="@(InspectionType.PersonalAssessment)">Assessments</MudSelectItem>
+                            <MudSelectItem Value="@(InspectionType.Others)">Other</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <ResourceUpload AcceptedExtensions="@Constants.Uploads.ImageExtensions"
+                                        FileUploadedMessage="Upload your inspection image"
+                                        UploadType="@Constants.Uploads.Image"
+                                        OnFileUploaded="OnHandleInspectionUpload" />
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="GetInspectionDto"
+                     Module="Inspection"
+                     Title="Delete Inspection"
+                     Description="Please confirm your action to change the status of the following inspection."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteInspection"
+                     CancelLabel="Discard"
+                     SubmitLabel="Delete"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="250"
+                          Width="250"
+                          Icon="@(DeleteInspectionDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteInspectionDto.IsActive ? "deactivate" : "activate") the following inspection?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

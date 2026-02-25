@@ -1,0 +1,46 @@
+@page "/roles"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (Roles == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table roles-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Roles.Result)
+                {
+                    <tr>
+                        <td>@(Roles.Result.IndexOf(item) + 1).</td>
+                        <td>@item.Name</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Roles.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Roles.TotalCount" />
+    </div>
+}

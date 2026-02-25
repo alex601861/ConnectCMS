@@ -1,0 +1,220 @@
+﻿@if (CandidateDetail == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="candidate-detail inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange"/>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenUnassignedCandidateOpenModal" StartIcon="@Icons.Material.Filled.Assignment">Assign Candidates</MudButton>
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="row gap-y-5 candidate-detail-grid">
+                @foreach (var candidate in CandidateDetail.Result)
+                {
+                    <div class="col-xxl-3 col-xl-4 col-md-6 col-12">
+                        <MudCard class="trainer-card custom-card pa-6 position-relative" Elevation="0">
+                            <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert"
+                                     AriaLabel="Open user menu">
+                                <MudMenuItem OnClick="() => NavigateToCandidateDetails(candidate.TrainingCandidateId)">Profile</MudMenuItem>
+                                <MudMenuItem OnClick="() => OpenCloseRemoveCandidateModal(candidate.TrainingCandidateId)">Remove</MudMenuItem>
+                            </MudMenu>
+                            <Avatar Name="@candidate.Name" ImageUrl="@candidate.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath"/>
+                            <MudCardContent class="pa-0 d-flex flex-column gap-y-4">
+                                <div class="candidate-info text-center">
+                                    @if (!string.IsNullOrEmpty(candidate.Designation))
+                                    {
+                                        <MudTooltip Arrow="true" Text="@candidate.Designation" Color="Color.Primary">
+                                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-1">@candidate.Name</MudText>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-1">@candidate.Name</MudText>
+                                    }
+                                    <MudText Typo="Typo.body2" class="text-normal">@candidate.EmailAddress</MudText>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
+                                    <div class="candidate-approved-date text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Requested Date</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@candidate.RequestedDate</MudText>
+                                    </div>
+                                    <div class="candidate-approved-date text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Assigned Date</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@candidate.ApprovedDate</MudText>
+                                    </div>
+                                    <div class="candidate-contact text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Contact Number</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@candidate.PhoneNumber</MudText>
+                                    </div>
+                                    <div class="candidate-type text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Request Type</MudText>
+                                        @if (candidate.IsSelfRegistered)
+                                        {
+                                            <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                                <span>Self Requested</span>
+                                            </MudChip>
+                                        }
+                                        else if (candidate.IsClientRequestRegistered)
+                                        {
+                                            <MudTooltip Text="@candidate.Organization?.Name" Color="Color.Primary" Arrow="true">
+                                                <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Info">
+                                                    <span>Organizational</span>
+                                                </MudChip>
+                                            </MudTooltip>
+                                        }
+                                        else if (candidate.IsAdminRegistered)
+                                        {
+                                            <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error">
+                                                <span>Administrative</span>
+                                            </MudChip>
+                                        }
+                                    </div>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table roles-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Full Name</th>
+                        <th>Email Address</th>
+                        <th>Contact Number</th>
+                        <th>Request Type</th>
+                        <th>Requested Date</th>
+                        <th>Assigned Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var candidateDetails in CandidateDetail.Result)
+                    {
+                        <tr>
+                            <td>@(CandidateDetail.Result.IndexOf(candidateDetails) + 1).</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <Avatar Name="@candidateDetails.Name" ImageUrl="@candidateDetails.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" Height="40" Width="40" />
+                                    @if (!string.IsNullOrEmpty(candidateDetails.Designation))
+                                    {
+                                        <MudTooltip Arrow="true" Text="@candidateDetails.Designation" Color="Color.Primary">
+                                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark mb-1">@candidateDetails.Name</MudText>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark mb-1">@candidateDetails.Name</MudText>
+                                    }
+                                </div>
+                            </td>
+                            <td>@candidateDetails.EmailAddress</td>
+                            <td>@candidateDetails.PhoneNumber</td>
+                            <td>
+                                @if (candidateDetails.IsSelfRegistered)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                        <span>Self Requested</span>
+                                    </MudChip>
+                                }
+                                else if (candidateDetails.IsClientRequestRegistered)
+                                {
+                                    <MudTooltip Text="@candidateDetails.Organization?.Name" Color="Color.Primary" Arrow="true">
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Info">
+                                            <span>Organizational</span>
+                                        </MudChip>
+                                    </MudTooltip>
+                                }
+                                else if (candidateDetails.IsAdminRegistered)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error">
+                                        <span>Administrative</span>
+                                    </MudChip>
+                                }
+                            </td>
+                            <td>@candidateDetails.RequestedDate</td>
+                            <td>@candidateDetails.ApprovedDate</td>
+                            <td>
+                                <div class="action">
+                                    <MudTooltip Text="View Profile" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToCandidateDetails(candidateDetails.TrainingCandidateId)" />
+                                    </MudTooltip>
+                                    <MudTooltip Text="Remove Candidate" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/delete.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenCloseRemoveCandidateModal(candidateDetails.TrainingCandidateId)" />
+                                    </MudTooltip>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <Pagination PageCount="CandidateDetail.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="CandidateDetail.TotalCount" />
+        
+    </div>
+
+    if (IsAdminRequestAssignmentModalOpen)
+    {
+        <ModalLayout T="@AssignCandidatesDto"
+                     Module="Training"
+                     Title="Candidate Assignment"
+                     Description="Please select the candidates to be allocated or assigned to the respective training, Note: These are the candidates that have not requested for this training, please be sure to check the Approval Matrix page as well if you have not found your desired candidate."
+                     SubmitColor="Color.Primary"
+                     Size="modal-xl"
+                     OnSave="@AssignCandidateRequests"
+                     IsDisabled="IsCandidateNotAssignedDisabled"
+                     SubmitLabel="Save"
+                     CancelLabel="Cancel">
+            <MudTreeView Hover ReadOnly="false" TriState="true" @bind-SelectedValues="SelectedCandidateIds" SelectionMode="SelectionMode.MultiSelection" CheckBoxColor="Color.Info" Class="tree-view-upload">
+                @foreach (var candidate in UnassignedCandidates)
+                {
+                    <MudTreeViewItem T="Guid" Text="@GetUserDisplayName(candidate)" Value="@candidate.Id"/>
+                }
+            </MudTreeView>
+        </ModalLayout>
+    }
+
+    if (IsRemoveCandidateModalOpen)
+    {
+        <ModalLayout T="@AssignCandidatesDto"
+                     Module="Training"
+                     Title="Remove Candidate"
+                     Description="Please proceed on with the following steps to remove the candidate from the training."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@RemoveCandidateFromTraining"
+                     SubmitLabel="Remove"
+                     Alignment="Center"
+                     CancelLabel="Cancel">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@Animations.Regular.Rules"
+                          Trigger="loop"/>
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to remove the following candidate from the respective training? All the details related to the candidate will be completely removed from the training.
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

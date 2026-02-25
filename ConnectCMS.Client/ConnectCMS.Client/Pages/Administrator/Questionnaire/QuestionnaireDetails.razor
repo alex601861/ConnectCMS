@@ -1,0 +1,244 @@
+﻿<div class="inspection-questionnaire">
+    <div class="questions">
+        <div class="accordion custom-accordion d-flex flex-column gap-y-6" id="accordion-question-without-heading">
+            @* Non-Heading Questions *@
+            @if (Questionnaire.Questions.Any())
+            {
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="panel-question-without-heading">
+                        <button class="accordion-button text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#question-without-heading" aria-expanded="true" aria-controls="question-without-heading">
+                            Question without Heading
+                        </button>
+                    </h2>
+                    <div id="question-without-heading" class="accordion-collapse collapse show" aria-labelledby="panel-question-without-heading">
+                        <div class="d-flex flex-column gap-y-4 w-100">
+                            @foreach (var question in Questionnaire.Questions)
+                            {
+                                <div class="accordion-body">
+                                    <div class="row align-items-center gap-y-4 w-100">
+                                        <div class="question-title col-xl-6 col-lg-6 col-12">
+                                            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                Question Title
+                                                <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                            </MudText>
+                                            <MudTextField @bind-Value="question.Title" Variant="Variant.Outlined" Placeholder="Enter the question title" ReadOnly="true" />
+                                        </div>
+                                        <div class="question-type col-xl-3 col-lg-3 col-12">
+                                            @if (Inspection.Type.ToInspectionTypeString() == InspectionType.PersonalityTest)
+                                            {
+                                                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                    Trait Type
+                                                    <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                </MudText>
+                                                <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Value="@question.Trait" ReadOnly="true">
+                                                    <MudSelectItem Value="@TraitType.None.ToString()" Disabled="true">Select a Trait Type</MudSelectItem>
+                                                    <MudSelectItem Value="@TraitType.Openness.ToString()">Openness</MudSelectItem>
+                                                    <MudSelectItem Value="@TraitType.Conscientiousness.ToString()">Conscientiousness</MudSelectItem>
+                                                    <MudSelectItem Value="@TraitType.Extraversion.ToString()">Extraversion</MudSelectItem>
+                                                    <MudSelectItem Value="@TraitType.Agreeableness.ToString()">Agreeableness</MudSelectItem>
+                                                    <MudSelectItem Value="@TraitType.Neuroticism.ToString()">Neuroticism</MudSelectItem>
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                    Question Type
+                                                    <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                </MudText>
+                                                <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Value="@question.Type" ReadOnly="true">
+                                                    <MudSelectItem Value="@QuestionType.None.ToString()" Disabled="true">Select a Question Type</MudSelectItem>
+                                                    <MudSelectItem Value="@QuestionType.LongQuestion.ToString()">Long Questions</MudSelectItem>
+                                                    <MudSelectItem Value="@QuestionType.ShortQuestion.ToString()">Short Questions</MudSelectItem>
+                                                    <MudSelectItem Value="@QuestionType.Rating.ToString()">Rating</MudSelectItem>
+                                                    <MudSelectItem Value="@QuestionType.MultiSelectMcq.ToString()">Multi Select MCQ</MudSelectItem>
+                                                    <MudSelectItem Value="@QuestionType.SingleSelectMcq.ToString()">Single Select MCQ</MudSelectItem>
+                                                </MudSelect>
+                                            }
+                                        </div>
+                                    </div>
+                                    @if (Inspection.Type.ToInspectionTypeString() != InspectionType.PersonalityTest)
+                                    {
+                                        if (question.Type == QuestionType.SingleSelectMcq.ToString() || question.Type == QuestionType.MultiSelectMcq.ToString())
+                                        {
+                                            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark">
+                                                Answers
+                                                <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                            </MudText>
+                                            <div class="d-flex flex-column gap-y-2 w-100">
+                                                @foreach (var answer in question.Answers)
+                                                {
+                                                    <MudTextField @bind-Value="answer.Title" Variant="Variant.Outlined" Placeholder="Enter the answer title" ReadOnly="true" />
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* Heading Questions *@
+            @if (Questionnaire.HeadingQuestions.Any())
+            {
+                foreach (var headingQuestion in Questionnaire.HeadingQuestions)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="panel-question-with-heading_@headingQuestion.HeadingId">
+                            <button class="accordion-button text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#question-with-heading_@headingQuestion.HeadingId" aria-expanded="true" aria-controls="question-with-heading_@headingQuestion.HeadingId">
+                                @headingQuestion.Heading
+                            </button>
+                        </h2>
+                        <div id="question-with-heading_@headingQuestion.HeadingId" class="accordion-collapse collapse show" aria-labelledby="panel-question-with-heading_@headingQuestion.HeadingId">
+                            <div class="d-flex flex-column gap-y-4 w-100">
+                                @foreach (var question in headingQuestion.Questions)
+                                {
+                                    <div class="accordion-body">
+                                        <div class="row align-items-center gap-y-4 w-100">
+                                            <div class="question-title col-xl-6 col-lg-6 col-12">
+                                                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                    Question Title
+                                                    <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                </MudText>
+                                                <MudTextField @bind-Value="question.Title" Variant="Variant.Outlined" Placeholder="Enter the question title" ReadOnly="true" />
+                                            </div>
+                                            <div class="question-type col-xl-3 col-lg-3 col-12">
+                                                @if (Inspection.Type.ToInspectionTypeString() == InspectionType.PersonalityTest)
+                                                {
+                                                    <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                        Trait Type
+                                                        <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                    </MudText>
+                                                    <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Value="@question.Trait" ReadOnly="true">
+                                                        <MudSelectItem Value="@TraitType.None.ToString()" Disabled="true">Select a Trait Type</MudSelectItem>
+                                                        <MudSelectItem Value="@TraitType.Openness.ToString()">Openness</MudSelectItem>
+                                                        <MudSelectItem Value="@TraitType.Conscientiousness.ToString()">Conscientiousness</MudSelectItem>
+                                                        <MudSelectItem Value="@TraitType.Extraversion.ToString()">Extraversion</MudSelectItem>
+                                                        <MudSelectItem Value="@TraitType.Agreeableness.ToString()">Agreeableness</MudSelectItem>
+                                                        <MudSelectItem Value="@TraitType.Neuroticism.ToString()">Neuroticism</MudSelectItem>
+                                                    </MudSelect>
+                                                }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                        Question Type
+                                                        <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                    </MudText>
+                                                    <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Value="@question.Type" ReadOnly="true">
+                                                        <MudSelectItem Value="@QuestionType.None.ToString()" Disabled="true">Select a Question Type</MudSelectItem>
+                                                        <MudSelectItem Value="@QuestionType.LongQuestion.ToString()">Long Questions</MudSelectItem>
+                                                        <MudSelectItem Value="@QuestionType.ShortQuestion.ToString()">Short Questions</MudSelectItem>
+                                                        <MudSelectItem Value="@QuestionType.Rating.ToString()">Rating</MudSelectItem>
+                                                        <MudSelectItem Value="@QuestionType.MultiSelectMcq.ToString()">Multi Select MCQ</MudSelectItem>
+                                                        <MudSelectItem Value="@QuestionType.SingleSelectMcq.ToString()">Single Select MCQ</MudSelectItem>
+                                                    </MudSelect>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        @if (Inspection.Type.ToInspectionTypeString() != InspectionType.PersonalityTest)
+                                        {
+                                            if (question.Type == QuestionType.SingleSelectMcq.ToString() || question.Type == QuestionType.MultiSelectMcq.ToString())
+                                            {
+                                                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark">
+                                                    Answers
+                                                    <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                </MudText>
+                                                <div class="d-flex flex-column gap-y-2 w-100">
+                                                    @foreach (var answer in question.Answers)
+                                                    {
+                                                        <MudTextField @bind-Value="answer.Title" Variant="Variant.Outlined" Placeholder="Enter the answer title" ReadOnly="true" />
+                                                    }
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                }
+
+                                @foreach (var subHeading in headingQuestion.SubHeadingQuestions)
+                                {
+                                    <div class="accordion custom-accordion" id="accordion-question-with-sub-heading_@subHeading.HeadingId">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="panel-question-with-sub-heading_@subHeading.HeadingId">
+                                                <button class="accordion-button text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#question-with-sub-heading_@subHeading.HeadingId" aria-expanded="true" aria-controls="question-with-sub-heading_@subHeading.HeadingId">
+                                                    @subHeading.Heading
+                                                </button>
+                                            </h2>
+                                            <div id="question-with-sub-heading_@subHeading.HeadingId" class="accordion-collapse collapse show" aria-labelledby="panel-question-with-sub-heading_@subHeading.HeadingId">
+                                                <div class="d-flex flex-column gap-y-4 w-100">
+                                                    @foreach (var subHeadingQuestion in subHeading.Questions)
+                                                    {
+                                                    <div class="accordion-body">
+                                                        <div class="row align-items-center gap-y-4 w-100">
+                                                            <div class="question-title col-xl-6 col-lg-6 col-12">
+                                                                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                                    Question Title
+                                                                    <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                                </MudText>
+                                                                <MudTextField @bind-Value="subHeadingQuestion.Title" Variant="Variant.Outlined" Placeholder="Enter the question title" ReadOnly="true"/>
+                                                            </div>
+                                                            <div class="question-type col-xl-3 col-lg-3 col-12">
+                                                                @if (Inspection.Type.ToInspectionTypeString() == InspectionType.PersonalityTest)
+                                                                {
+                                                                    <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                                        Trait Type
+                                                                        <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                                    </MudText>
+                                                                    <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Value="@subHeadingQuestion.Trait" ReadOnly="true">
+                                                                        <MudSelectItem Value="@TraitType.None.ToString()" Disabled="true">Select a Trait Type</MudSelectItem>
+                                                                        <MudSelectItem Value="@TraitType.Openness.ToString()">Openness</MudSelectItem>
+                                                                        <MudSelectItem Value="@TraitType.Conscientiousness.ToString()">Conscientiousness</MudSelectItem>
+                                                                        <MudSelectItem Value="@TraitType.Extraversion.ToString()">Extraversion</MudSelectItem>
+                                                                        <MudSelectItem Value="@TraitType.Agreeableness.ToString()">Agreeableness</MudSelectItem>
+                                                                        <MudSelectItem Value="@TraitType.Neuroticism.ToString()">Neuroticism</MudSelectItem>
+                                                                    </MudSelect>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-4">
+                                                                        Question Type
+                                                                        <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                                    </MudText>
+                                                                    <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined" Value="@subHeadingQuestion.Type" ReadOnly="true">
+                                                                        <MudSelectItem Value="@QuestionType.None.ToString()" Disabled="true">Select a Question Type</MudSelectItem>
+                                                                        <MudSelectItem Value="@QuestionType.LongQuestion.ToString()">Long Questions</MudSelectItem>
+                                                                        <MudSelectItem Value="@QuestionType.ShortQuestion.ToString()">Short Questions</MudSelectItem>
+                                                                        <MudSelectItem Value="@QuestionType.Rating.ToString()">Rating</MudSelectItem>
+                                                                        <MudSelectItem Value="@QuestionType.MultiSelectMcq.ToString()">Multi Select MCQ</MudSelectItem>
+                                                                        <MudSelectItem Value="@QuestionType.SingleSelectMcq.ToString()">Single Select MCQ</MudSelectItem>
+                                                                    </MudSelect>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @if (Inspection.Type.ToInspectionTypeString() != InspectionType.PersonalityTest)
+                                                        {
+                                                            if (subHeadingQuestion.Type == QuestionType.SingleSelectMcq.ToString() || subHeadingQuestion.Type == QuestionType.MultiSelectMcq.ToString())
+                                                            {
+                                                                <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark">
+                                                                    Answers
+                                                                    <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                                                                </MudText>
+                                                                <div class="d-flex flex-column gap-y-2 w-100">
+                                                                    @foreach (var answer in subHeadingQuestion.Answers)
+                                                                    {
+                                                                        <MudTextField @bind-Value="answer.Title" Variant="Variant.Outlined" Placeholder="Enter the answer title" ReadOnly="true" />
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

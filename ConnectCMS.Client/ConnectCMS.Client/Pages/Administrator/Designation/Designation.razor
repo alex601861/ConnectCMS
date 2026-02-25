@@ -1,0 +1,138 @@
+@page "/designations"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (Designations == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter" />
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateDesignationModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Designation</MudButton>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table country-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Designations.Result)
+                {
+                    <tr>
+                        <td>@(Designations.Result.IndexOf(item) + 1).</td>
+                        <td>@item.Title</td>
+                        <td>@((MarkupString)item.Description)</td>
+                        <td>
+                            <ActivationStatus IsActive="@item.IsActive"/>
+                        </td>
+                        <td>
+                            <div class="action">
+                                <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenDesignationUpdateModal(item.Id)"/>
+                                </MudTooltip>
+                                <MudTooltip Text="@(item.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="@(item.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenDesignationDeleteModal(item.Id)"/>
+                                </MudTooltip>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Designations.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Designations.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateDesignationDto"
+                     Module="Module"
+                     Title="Add Designation"
+                     Description="Add a new designation to the system, by filling up the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertDesignation"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateDesignationButtonDisabled">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="CreateDesignationDto.Title" Label="Title" For="@(() => CreateDesignationDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the Designation Title " Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="CreateDesignationDto.Description"/>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="@UpdateDesignationDto"
+                     Module="Module"
+                     Title="Update Designation"
+                     Description="Update an existing designation, by filling up the following form."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateDesignation"
+                     CancelLabel="Discard"
+                     IsDisabled="IsUpdateDesignationButtonDisabled"
+                     SubmitLabel="Submit">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="UpdateDesignationDto.Title" Label="Name" For="@(() => UpdateDesignationDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the Designation Title " Immediate="true"/>
+                </MudItem>
+                <MudItem Class="pt-4" xs=12 md=12 xl=12>
+                    <TextEditor @bind-Value="UpdateDesignationDto.Description"/>
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@GetDesignationDto"
+                     Module="Module"
+                     Title=@($"{(DeleteDesignationDto.IsActive ? "Activate" : "Deactivate")} Designation.")
+                     Description=@($"{(DeleteDesignationDto.IsActive ? "Activate" : "deactivate")} the following designation, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteDesignation"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(DeleteDesignationDto.IsActive ? "Deactivate" : "Activate")"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="250"
+                          Width="250"
+                          Icon="@(DeleteDesignationDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop"/>
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteDesignationDto.IsActive ? "deactivate" : "activate") the following designation?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

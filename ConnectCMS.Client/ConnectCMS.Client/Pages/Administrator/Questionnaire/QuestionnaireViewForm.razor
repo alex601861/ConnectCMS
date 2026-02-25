@@ -1,0 +1,98 @@
+﻿@page "/admin/questionnaire-view-form/{QuestionnaireId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (IsLoading)
+{
+    <Loader />
+}
+else
+{
+    <Back NavigationUrl="@($"/trainings/admin/training-details/{Training.Id}/5")" />
+
+    <div class="inspection-questionnaire">
+        <div class="class-details-card custom-card mb-6">
+            <div class="d-flex align-items-center flex-wrap flex-sm-nowrap gap-y-5 gap-x-6">
+                <div style="width: 207px">
+                    <MudImage Src="@Training.ImageUrl" Height="140" Width="207" Class="img-fluid w-100 card__image" />
+                </div>
+                <div class="w-auto">
+                    <MudCardContent Class="pa-0 d-flex flex-column gap-3">
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="fw-bold">@Training.Title</MudText>
+                        <MudText Typo="Typo.body1" class="form-desc">
+                            @((MarkupString)Training.Description)
+                        </MudText>
+                        <MudPaper Elevation="0" Class="bg-transparent">
+                            <div class="date d-flex align-items-center gap-x-2 mb-2">
+                                <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20" />
+                                <MudText Typo="Typo.subtitle2" Class="text-normal">@Training.StartDate - @Training.EndDate</MudText>
+                            </div>
+                            <div class="time d-flex align-items-center gap-x-2">
+                                <MudImage Src="images/icons/clock.svg" Alt="Blue Clock Icon" Width="20" Height="20" />
+                                <MudText Typo="Typo.subtitle2" Class="text-normal">@Training.LocationDetails</MudText>
+                            </div>
+                        </MudPaper>
+                    </MudCardContent>
+                </div>
+            </div>
+        </div>
+        
+        <div class="title mb-8">
+            <div class="d-flex justify-content-between align-items-center">
+                <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-2">@Inspection.Name</MudText>
+                <MudTooltip Arrow="true" Text="Inspection Details" Color="Color.Primary" Placement="Placement.Left">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" @onclick="OpenCloseInspectionModal"/>
+                </MudTooltip>
+            </div>
+            <MudText Typo="Typo.body2" Class="text-normal">View all the questions and the respective respondents in the following tab.</MudText>
+        </div>
+        
+        <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pt-6" Class="rounded-lg mt-8" @bind-ActivePanelIndex="ActivePanelIndex">
+            @if (Inspection.Type.ToInspectionTypeString() != InspectionType.SwotAnalysis)
+            {
+                <MudTabPanel Text="Questions" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.QuestionAnswer">
+                    @if (ActivePanelIndex == 0)
+                    {
+                        <QuestionnaireDetails QuestionnaireId="QuestionnaireId" />
+                    }
+                </MudTabPanel>
+                <MudTabPanel Text="Statistics" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.QueryStats">
+                    @if (ActivePanelIndex == 1)
+                    {
+                        <QuestionnaireStatistics QuestionnaireId="QuestionnaireId" />
+                    }
+                </MudTabPanel>
+                <MudTabPanel Text="Respondents" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.Quickreply">
+                    @if (ActivePanelIndex == 2)
+                    {
+                        <QuestionnaireResponses QuestionnaireId="QuestionnaireId" Inspection="Inspection" />
+                    }
+                </MudTabPanel>
+            }
+            else
+            {
+                <MudTabPanel Text="Respondents" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.Quickreply">
+                    @if (ActivePanelIndex == 0)
+                    {
+                        <QuestionnaireResponses QuestionnaireId="QuestionnaireId" Inspection="Inspection" />
+                    }
+                </MudTabPanel>
+            }
+        </MudTabs>
+    </div>
+
+    if (IsInspectionModalOpen)
+    {
+        <ModalLayout T="@GetInspectionDto"
+                     Module="Inspection Module"
+                     Title="@Inspection.Name"
+                     Description="View the details of the respective inspection."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OpenCloseInspectionModal"
+                     CancelLabel="Discard">
+            <InspectionViewDetails InspectionId="@Inspection.Id"/>
+        </ModalLayout>
+    }
+}

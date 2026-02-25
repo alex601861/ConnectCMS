@@ -1,0 +1,253 @@
+﻿@page "/resources"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (ResourceDetail is null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="resources inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+            </div>
+            <div class="filter-right">
+                <div class="d-flex gap-x-2">
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenResourceUploadModal" StartIcon="@Icons.Material.Filled.Add">Upload Materials</MudButton>
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="() => NavigateToResourcePost()" StartIcon="@Icons.Material.Filled.Create">Post References</MudButton>    
+                </div>
+            </div>
+        </div>
+        <div class="row resource-grid gap-y-6">
+            @foreach (var item in ResourceDetail.Result)
+            {
+                <div class="col-xxl-3 col-xl-4 col-sm-6 col-12">
+                    <MudCard Class="resource-card custom-card pa-6 h-100 d-flex flex-column gap-4 position-relative" Elevation="0">
+                        <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AriaLabel="Open user menu">
+                            <MudMenuItem OnClick="() => OpenResourceUpdateModal(item.Id, item.Tag)">Edit</MudMenuItem>
+                        </MudMenu>
+         
+                        <MudPaper Elevation="0" Class="bg-white card-img">
+                            @if (item.IsLink)
+                            {
+                                if (string.IsNullOrEmpty(item.Tag))
+                                {
+                                    <LordIcon Icon="@Animations.Regular.Link"
+                                              Height="80"
+                                              Width="80"/>
+                                }
+                                else
+                                {
+                                    <LordIcon Icon="@Animations.Regular.Bookmark"
+                                              Height="80"
+                                              Width="80"/>
+                                }
+                            }
+                            else
+                            {
+                                if (item.Type == FileType.Image.ToString())
+                                {
+                                    <LordIcon Icon="@Animations.Regular.Image"
+                                              Height="80"
+                                              Width="80"/>
+                                }
+                                else
+                                {
+                                    <LordIcon Icon="@(ResourceDetail.Result.IndexOf(item) % 2 == 0 ? Animations.Regular.Book : Animations.Regular.Reader)"
+                                              Height="80"
+                                              Width="80"/>
+                                }
+                            }
+                        </MudPaper>
+                        <MudCardContent Class="pa-0 text-center">
+                            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="text-dark mb-2 fw-bold">@item.Title</MudText>
+                            <MudText Typo="Typo.body2" Class="text-normal">@((MarkupString)item.Description)</MudText>
+                        </MudCardContent>
+                        <MudCardActions Class="d-flex justify-content-between align-items-center flex-wrap gap-x-3 gap-y-3 pa-0">
+                            @if (!item.IsLink)
+                            {
+                                <MudButton Variant="Variant.Filled"
+                                           StartIcon="@Icons.Material.Filled.Download"
+                                           Size="Size.Medium"
+                                           Color="Color.Primary"
+                                           DropShadow="false"
+                                           Class="btn btn--md w-100"
+                                           OnClick="() => DownloadResourceMaterial(item.Id)">
+                                    Download
+                                </MudButton>
+                            }
+                            else
+                            {
+                                if (item.Type == FileType.Link.ToString())
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               StartIcon="@Icons.Material.Filled.Link"
+                                               Size="Size.Medium"
+                                               Color="Color.Secondary"
+                                               Target="_blank"
+                                               DropShadow="false"
+                                               Class="btn btn--md w-100"
+                                               Href="@(item.Link!.StartsWith("http") ? item.Link : $"https://{item.Link}")">
+                                        Visit Link
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               StartIcon="@Icons.Material.Filled.Link"
+                                               Size="Size.Medium"
+                                               Color="Color.Secondary"
+                                               DropShadow="false"
+                                               Class="btn btn--md w-100"
+                                               OnClick="() => NavigateToResourcePost(item.Id)">
+                                        Visit Link
+                                    </MudButton>
+                                }
+                            }
+                            <MudButton Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Tertiary"
+                                       Size="Size.Medium"
+                                       DropShadow="false"
+                                       Class="btn btn--md w-100"
+                                       OnClick="() => OpenResourceDeleteModal(item.Id)">
+                                Delete
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </div>
+            }
+        </div>
+        
+        <Pagination PageCount="ResourceDetail.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="ResourceDetail.TotalCount" />
+    </div>
+
+    if (IsResourceUploadModalOpen)
+    {
+        <ModalLayout T="@ResourceUploadDto"
+                     Module="Module"
+                     Title="Upload Resource Material"
+                     Description="Please fill in the following form to upload a new resource material."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UploadResourceMaterial"
+                     IsDisabled="IsCreateResourceButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudTextField @bind-Value="ResourceUpload.Title" Label="Title" For="@(() => ResourceUpload.Title)" Variant="Variant.Outlined" Placeholder="Enter the resource title" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <TextEditor @bind-Value="ResourceUpload.Description"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="fw-bold text-dark">Upload Type</MudText>
+                        <MudRadioGroup @bind-Value="@ResourceUpload.IsLink">
+                            <MudRadio Value="false" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">File</MudText>
+                            </MudRadio>
+                            <MudRadio Value="true" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Link</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12 mt-2">
+                        @if (ResourceUpload.IsLink)
+                        {
+                            <MudTextField @bind-Value="ResourceUpload.Link" Label="Link URL" For="@(() => ResourceUpload.Link)" Variant="Variant.Outlined" Placeholder="Enter the resource link" Immediate="true"/>
+                        }
+                        else
+                        {
+                            <ResourceUpload AcceptedExtensions="@Constants.Uploads.ResourceExtensions"
+                                            FileUploadedMessage="Upload your resource material"
+                                            UploadType="@Constants.Uploads.Resource"
+                                            OnFileUploaded="OnHandleResourceUpload"/>
+                        }
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsEditModalOpen)
+    {
+        <ModalLayout T="UpdateResourceDto"
+                     Module="Module"
+                     Title="Update Resource Material"
+                     Description="Please fill in the following form to update the existing resource material."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateResourceMaterial"
+                     IsDisabled="IsUpdateResourceButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudTextField @bind-Value="UpdateResourceDto.Title" Label="Title" For="@(() => UpdateResourceDto.Title)" Variant="Variant.Outlined" Placeholder="Enter the resource title" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <TextEditor @bind-Value="UpdateResourceDto.Description"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="fw-bold text-dark">Upload Type</MudText>
+                        <MudRadioGroup @bind-Value="@UpdateResourceDto.IsLink">
+                            <MudRadio Value="false" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">File</MudText>
+                            </MudRadio>
+                            <MudRadio Value="true" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Link</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12 mt-2">
+                        @if (UpdateResourceDto.IsLink)
+                        {
+                            <MudTextField @bind-Value="UpdateResourceDto.Link" Label="Link URL" For="@(() => UpdateResourceDto.Link)" Variant="Variant.Outlined" Placeholder="Enter the resource link"/>
+                        }
+                        else
+                        {
+                            <ResourceUpload AcceptedExtensions="@Constants.Uploads.ResourceExtensions"
+                                            FileUploadedMessage="Upload your resource material"
+                                            UploadType="@Constants.Uploads.Resource"
+                                            OnFileUploaded="OnHandleResourceUpdateUpload"/>
+                        }
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsResourceDeleteModalOpen)
+    {
+        <ModalLayout T="@GetResourceDetailsDto"
+                     Module="Module"
+                     Title="Delete Resource Material"
+                     Description="Please confirm the deletion of the following resource material."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteResourceMaterial"
+                     CancelLabel="Discard"
+                     SubmitLabel="Delete"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Icon="@Animations.Regular.Trash"
+                          Height="200"
+                          Width="200"/>
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to delete the following resource material?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+}

@@ -1,0 +1,532 @@
+﻿@page "/users"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (UserList == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+                <ActivationFilter Value="IsActive" ValueChanged="OnStatusFilter"/>
+                <Filter OnFilterApplication="OnUserFilter">
+                    <MudSelect T="Guid" @bind-Value="RoleId" Label="Role" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="Guid.Empty">All Users</MudSelectItem>
+                        @foreach (var role in Roles)
+                        {
+                            <MudSelectItem Value="@role.Id">@role.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </Filter>
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenRegisterUsersModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Register User</MudButton>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table user-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var user in UserList.Result)
+                {
+                    <tr>
+                        <td>@(UserList.Result.IndexOf(user) + 1).</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <Avatar Name="@user.Name" ImageUrl="@user.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" Height="40" Width="40"/>
+                                <MudTooltip Text="@(user.Designation)" Color="Color.Primary" Arrow="true">
+                                    @user.Name
+                                </MudTooltip>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                @if (user.Gender == GenderType.Male.ToString())
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Male" Title="Male" Color="Color.Info"/>
+                                }
+                                else if (user.Gender == GenderType.Female.ToString())
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Female" Title="Female" Color="Color.Error"/>
+                                }
+                                else
+                                {
+                                    <MudIcon Icon="@Icons.Material.Filled.Transgender" Title="Others" Color="Color.Primary"/>
+                                }
+                            </div>
+                        </td>
+                        <td>@user.Email</td>
+                        <td>@user.PhoneNumber</td>
+                        <td class="cursor-pointer">
+                            @if (!string.IsNullOrEmpty(user.Organization))
+                            {
+                                <MudTooltip Arrow="true" Text="@user.Organization">
+                                    @user.Role
+                                </MudTooltip>
+                            }
+                            else
+                            {
+                                @user.Role
+                            }
+                        </td>
+                        <td>
+                            <ActivationStatus IsActive="@user.IsActive"/>
+                        </td>
+                        <td>
+                            @if (user.Role != Constants.Roles.SuperAdmin)
+                            {
+                                <div class="action">
+                                    <MudTooltip Text="Edit" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/edit.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenUpdateUserDetailsModal(user.Id)"/>
+                                    </MudTooltip>
+                                    <MudTooltip Text="Reset Password" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/lock.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => OpenResetUserPasswordModal(user.Id)"/>
+                                    </MudTooltip>
+                                    <MudTooltip Text="@(user.IsActive ? "Deactivate" : "Activate")" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="@(user.IsActive ? "images/icons/delete.svg" : "images/icons/document.svg")" Alt="Bin Icon" Height="18" Width="18" @onclick="() => OpenUserActivateDeactivateModal(user.Id)"/>
+                                    </MudTooltip>
+                                    <MudTooltip Text="Delete User" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/remove.svg" Alt="Delete Icon" Height="18" Width="18" @onclick="() => OpenUserDeleteModal(user.Id)"/>
+                                    </MudTooltip>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="UserList.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="UserList.TotalCount" />
+
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@UserRegisterDto"
+                     Module="Users"
+                     Title="User Registration"
+                     Description="Register a new user to the system, by filling up the following form below."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@RegisterNewUser"
+                     CancelLabel="Discard"
+                     SubmitLabel="Register"
+                     IsDisabled="IsCreateUserButtonDisabled">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-12 text-center">
+                        <div @onclick="ToggleUserRegistrationImage">
+                            @if (RegisterDto.ImageUrl == null)
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                                    <MudImage Src="images/icons/user.svg" Alt="User Profile Picture" Style="width: 44px; height: 44px"></MudImage>
+                                </MudAvatar>
+                            }
+                            else
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto">
+                                    <MudImage Src="@RegisterDto.Image" Alt="User Profile Picture"></MudImage>
+                                </MudAvatar>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Full Name" @bind-Value="RegisterDto.Name" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Email Address" @bind-Value="RegisterDto.Email" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Phone Number" @bind-Value="RegisterDto.PhoneNumber" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="text-dark">Gender</MudText>
+                        <MudRadioGroup T="@(GenderType?)" @bind-Value="@RegisterDto.Gender">
+                            <MudRadio Value="@(GenderType.Male as GenderType?)" Color="Color.Secondary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Male</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Female as GenderType?)" Color="Color.Error">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Female</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Other as GenderType?)" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Other</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Password" @bind-Value="RegisterDto.Password" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Confirm Password" @bind-Value="RegisterDto.ConfirmPassword" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect T="Guid?" Label="Country" @bind-Value="RegisterDto.CountryId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Country</MudSelectItem>
+                            @foreach (var item in Countries)
+                            {
+                                <MudSelectItem Value="@(item.Id as Guid?)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Role" @bind-Value="RegisterDto.RoleId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Role</MudSelectItem>
+                            @foreach (var item in PrecedingRoles)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    @if (ShowAdminOrganization)
+                    {
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudSelect Label="Organization" @bind-Value="RegisterDto.OrganizationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Organization</MudSelectItem>
+                                @foreach (var item in AdminOrganizations)
+                                {
+                                    <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudSelect Label="Designation" @bind-Value="RegisterDto.DesignationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                @foreach (var item in Designations)
+                                {
+                                    <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <div class="col-xl-12 col-md-12 col-12">
+                            <MudTextField Label="Address" @bind-Value="RegisterDto.Address" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                        </div>
+                    }
+                    else if (ShowCandidateOrganization)
+                    {
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudText Typo="Typo.subtitle1" Class="text-dark">Candidate Type</MudText>
+                            <MudRadioGroup T="bool" @bind-Value="@IsSelfRegisteredCandidate">
+                                <MudRadio Value="true" Color="Color.Secondary">
+                                    <MudText Typo="Typo.subtitle2" Class="text-dark">Self</MudText>
+                                </MudRadio>
+                                <MudRadio Value="false" Color="Color.Error">
+                                    <MudText Typo="Typo.subtitle2" Class="text-dark">Organizational</MudText>
+                                </MudRadio>
+                            </MudRadioGroup>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudSelect Label="Organization" @bind-Value="RegisterDto.OrganizationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@IsSelfRegisteredCandidate">
+                                <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Organization</MudSelectItem>
+                                @foreach (var item in CandidateOrganizations)
+                                {
+                                    <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudSelect Label="Designation" @bind-Value="RegisterDto.DesignationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                                <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                @foreach (var item in Designations)
+                                {
+                                    <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudTextField Label="Address" @bind-Value="RegisterDto.Address" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-xl-12 col-md-12 col-12">
+                            <MudTextField Label="Address" @bind-Value="RegisterDto.Address" Required="true" Variant="Variant.Outlined" Immediate="true"/>
+                        </div>
+                    }
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsUpdateUserDetailsModalOpen)
+    {
+        <ModalLayout T="@UpdateUserRequestDto"
+                     Module="Users"
+                     Title="User Update"
+                     Description="Update an existing user, by filling up the following form below."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateUserDetails"
+                     IsDisabled="IsUpdateUserButtonDisabled"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-12 text-center">
+                        <div @onclick="ToggleUpdateUserImage">
+                            @if (string.IsNullOrEmpty(UserRequest.ImageUrl))
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto" Color="Color.Secondary" Variant="Variant.Outlined">
+                                    <MudImage Src="images/icons/user.svg" Alt="User Profile Picture" Style="width: 44px; height: 44px"></MudImage>
+                                </MudAvatar>
+                            }
+                            else
+                            {
+                                <MudAvatar Style="height:100px; width:100px; font-size:2rem;" Class="mx-auto">
+                                    <MudImage Src="@UserRequest.ImageUrl" Alt="User Profile Picture"></MudImage>
+                                </MudAvatar>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.Name" Label="Full Name" For="@(() => UserRequest.Name)" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.EmailAddress" For="@(() => UserRequest.EmailAddress)" Label="Email Address" Variant="Variant.Outlined" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.PhoneNumber" Label="Phone Number" For="@(() => UserRequest.PhoneNumber)" Variant="Variant.Outlined" InputType="InputType.Number" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="text-dark">Gender</MudText>
+                        <MudRadioGroup T="@(GenderType?)" @bind-Value="@UserRequest.Gender">
+                            <MudRadio Value="@(GenderType.Male as GenderType?)" Color="Color.Secondary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Male</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Female as GenderType?)" Color="Color.Error">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Female</MudText>
+                            </MudRadio>
+                            <MudRadio Value="@(GenderType.Other as GenderType?)" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Other</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudSelect Label="Country" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@UserRequest.CountryId">
+                            <MudSelectItem Value="@Guid.Empty" Disabled="true">Select a Country</MudSelectItem>
+                            @foreach (var item in Countries)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField @bind-Value="UserRequest.Role" Label="Role" For="@(() => UserRequest.Role)" Variant="Variant.Outlined" ReadOnly="true"/>
+                    </div>
+                    @if (UserRequest.Role == Constants.Roles.Client)
+                    {
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudTextField @bind-Value="UserRequest.Organization" Label="Organization" For="@(() => UserRequest.Organization)" Variant="Variant.Outlined" ReadOnly="true"/>
+                        </div>
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudSelect Label="Designation" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@UserRequest.DesignationId">
+                                <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                @foreach (var item in Designations)
+                                {
+                                    <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <div class="col-xl-12 col-md-12 col-12">
+                            <MudTextField @bind-Value="UserRequest.Address" Label="Address" For="@(() => UserRequest.Address)" Variant="Variant.Outlined" Immediate="true"/>
+                        </div>
+                    }
+                    else if (UserRequest.Role == Constants.Roles.Candidate)
+                    {
+                        if (string.IsNullOrEmpty(UserRequest.Organization))
+                        {
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudText Typo="Typo.subtitle1" Class="text-dark">Candidate Type</MudText>
+                                <MudRadioGroup T="bool" @bind-Value="@CandidateType">
+                                    <MudRadio Value="true" Color="Color.Secondary">
+                                        <MudText Typo="Typo.subtitle2" Class="text-dark">Self</MudText>
+                                    </MudRadio>
+                                    <MudRadio Value="false" Color="Color.Error">
+                                        <MudText Typo="Typo.subtitle2" Class="text-dark">Organizational</MudText>
+                                    </MudRadio>
+                                </MudRadioGroup>
+                            </div>
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudSelect Label="Organization" @bind-Value="@UserRequest.OrganizationId" Required="true" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Disabled="@IsSelfRegisteredCandidate">
+                                    <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Organization</MudSelectItem>
+                                    @foreach (var item in CandidateOrganizations)
+                                    {
+                                        <MudSelectItem Value="@(item.Id as Guid?)">@item.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudSelect Label="Designation" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@UserRequest.DesignationId">
+                                    <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                    @foreach (var item in Designations)
+                                    {
+                                        <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudTextField @bind-Value="UserRequest.Address" Label="Address" For="@(() => UserRequest.Address)" Variant="Variant.Outlined" Immediate="true"/>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudText Typo="Typo.subtitle1" Class="text-dark">Candidate Type</MudText>
+                                <MudRadioGroup T="bool" @bind-Value="@IsSelfRegisteredCandidate" ReadOnly="true">
+                                    <MudRadio Value="false" Color="Color.Secondary">
+                                        <MudText Typo="Typo.subtitle2" Class="text-dark">Self</MudText>
+                                    </MudRadio>
+                                    <MudRadio Value="true" Color="Color.Error">
+                                        <MudText Typo="Typo.subtitle2" Class="text-dark">Organizational</MudText>
+                                    </MudRadio>
+                                </MudRadioGroup>
+                            </div>
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudTextField @bind-Value="UserRequest.Organization" Label="Organization Name" Variant="Variant.Outlined" Immediate="true" ReadOnly="true"/>
+                            </div>
+
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudSelect Label="Designation" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" @bind-Value="@UserRequest.DesignationId">
+                                    <MudSelectItem Value="@(Guid.Empty as Guid?)" Disabled="true">Select a Designation</MudSelectItem>
+                                    @foreach (var item in Designations)
+                                    {
+                                        <MudSelectItem Value="@(item.Id as Guid?)">@item.Title</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                            <div class="col-xl-6 col-md-6 col-12">
+                                <MudTextField @bind-Value="UserRequest.Address" Label="Address" For="@(() => UserRequest.Address)" Variant="Variant.Outlined" Immediate="true"/>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-xl-6 col-md-6 col-12">
+                            <MudTextField @bind-Value="UserRequest.Address" Label="Address" For="@(() => UserRequest.Address)" Variant="Variant.Outlined" Immediate="true"/>
+                        </div>
+                    }
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsActivateDeactivateUser)
+    {
+        <ModalLayout T="@UserDetail"
+                     Module="Users"
+                     Title=@($"{(DeleteUserDetailDto.IsActive ? "Activate" : "Deactivate")} User.")
+                     Description=@($"{(DeleteUserDetailDto.IsActive ? "Activate" : "Deactivate")} the following user, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@ActivateDeactivateUsers"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(DeleteUserDetailDto.IsActive ? "Deactivate" : "Activate")"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(DeleteUserDetailDto.IsActive ? Animations.Regular.Trash : Animations.Regular.Edit)"
+                          State="hover-pinch"
+                          Trigger="loop"/>
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to @(DeleteUserDetailDto.IsActive ? "deactivate" : "activate") the following user?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsDeleteModalOpen)
+    {
+        <ModalLayout T="@UserDetail"
+                     Module="Users"
+                     Title=@("Delete the following User.")
+                     Description=@("Delete the following user, by following the instructions.")
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@DeleteUser"
+                     CancelLabel="Cancel"
+                     SubmitLabel="Delete"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(Animations.Regular.Trash)"
+                          State="hover-pinch"
+                          Trigger="loop"/>
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to delete the following user?
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsResetPasswordModalOpen)
+    {
+        <ModalLayout T="@ResetUserPasswordDto"
+                     Module="Users"
+                     Title="Reset User Password."
+                     Description="Reset the password of the following user, by following the provided instructions."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@ResetUserPassword"
+                     CancelLabel="Cancel"
+                     SubmitLabel="Reset"
+                     IsDisabled="IsResetPasswordButtonDisabled"
+                     Alignment="Center">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@(Animations.Regular.Lock)"
+                          State="hover-pinch"
+                          Trigger="loop"/>
+                <MudText Class="hfs4 data fw-600">
+                    Are you sure you want to reset the password for the following user? A confirmation email will be sent to the respective user with their new updated password.
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+
+    if (OpenUserImageDrawerToggle)
+    {
+        <ModalLayout T="@FileUploadResultDto"
+                     Module="Upload Image"
+                     SubmitColor="Color.Primary"
+                     Size="modal-md"
+                     OnSave="ToggleUserRegistrationImage">
+            <ImageCropper OnFileUploaded="HandleRegisterUserImageUpload"/>
+        </ModalLayout>
+    }
+
+    if (OpenUpdateUserImageDrawerToggle)
+    {
+        <ModalLayout T="@FileUploadResultDto"
+                     Module="Upload Image"
+                     SubmitColor="Color.Primary"
+                     Size="modal-md"
+                     OnSave="ToggleUpdateUserImage">
+            <ImageCropper OnFileUploaded="HandleUpdateUserImageUpload"/>
+        </ModalLayout>
+    }
+}

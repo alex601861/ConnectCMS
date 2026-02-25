@@ -1,0 +1,48 @@
+﻿@page "/resources/update/{ResourceId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back />
+
+<EditForm Model="@Resource" OnValidSubmit="@UpdateResourcePost">
+    <DataAnnotationsValidator />
+    <div class="mt-4">
+        <div class="d-flex flex-column w-100 gap-y-5">
+            <div class="form-content">
+                <MudTextField
+                    @bind-Value="Resource.Title"
+                    Label="Title"
+                    For="@(() => Resource.Title)"
+                    Variant="Variant.Outlined"
+                    Placeholder="Enter the title of the resource"
+                    Class="w-100" />
+            </div>
+            <div class="form-content">
+                <MudTextField
+                    @bind-Value="Resource.Tag"
+                    Label="Tag"
+                    For="@(() => Resource.Tag)"
+                    Variant="Variant.Outlined"
+                    Placeholder="Enter the tag of the resource"
+                    Class="w-100" />
+            </div>
+            <div class="form-content">
+                <TextEditor
+                    @bind-Value="Resource.Description"
+                    Description="Description"
+                    Height="300px" 
+                    CssClass="value-text-editor"/>
+            </div>
+            <div class="form-content text-end">
+                <MudButton DropShadow="false"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           Class="btn btn--md"
+                           ButtonType="ButtonType.Submit">
+                    Submit
+                </MudButton>
+            </div>
+        </div>
+    </div>
+</EditForm>

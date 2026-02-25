@@ -1,0 +1,21 @@
+﻿@page "/personality-test/facets"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div>
+    <MudTabs Elevation="0" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+        <MudTabPanel Text="Traits" BadgeData="5" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 0)
+            {
+                <Traits/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Facets" BadgeData="@HeadingCount.HeadingCount" BadgeColor="Color.Secondary">
+            @if (ActivePanelIndex == 1)
+            {
+                <Heading HeadingType="HeadingType.Heading" FacetType="FacetType.Facet" InspectionType="InspectionType.PersonalityTest" OnHeadingCountUpdate="EventCallback.Factory.Create(this, HandleHeadersCount)"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>
