@@ -1,0 +1,14 @@
+﻿@page "/answer-details-form/{UserResponseId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back NavigationUrl="@TrainingQuestionnaireUrl"/>
+
+<div class="question-answer-form">
+    @if (TrainingDetails.Id != Guid.Empty)
+    {
+        <TrainingViewDetails TrainingId="@TrainingDetails.Id"/>
+    }
+    <UserResponseDetails UserResponseId="UserResponseId" />
+</div>

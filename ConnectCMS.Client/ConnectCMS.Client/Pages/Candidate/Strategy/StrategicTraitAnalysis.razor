@@ -1,0 +1,72 @@
+﻿<div class="view-swot-analysis">
+    <div class="swot-analysis__grid row">
+        <div class="swot-analysis__grid-item col-xxl-3 col-sm-6 col-12 mb-4">
+            <MudCard Elevation="0" class="swot-analysis__card">
+                <MudImage Src="images/analysis/strength.png" Height="80" Width="80" />
+                <MudCardContent Class="pa-0 pt-2">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-1">Strengths</MudText>
+                    <MudText Typo="Typo.body2" Class="text-dark mb-4">
+                        What do you do well? What unique resources can you draw on?
+                    </MudText>
+                    <ul class="swot-analysis__list">
+                        @foreach (var item in StrategyTraitsResult.Strengths)
+                        {
+                            <li>@item.Name</li>
+                        }
+                    </ul>
+                </MudCardContent>
+            </MudCard>
+        </div>
+        <div class="swot-analysis__grid-item col-xxl-3 col-sm-6 col-12 mb-4">
+            <MudCard Elevation="0" class="swot-analysis__card">
+                <MudImage Src="images/analysis/weakness.png" Height="80" Width="80" />
+                <MudCardContent Class="pa-0 pt-2">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-1">Weaknesses</MudText>
+                    <MudText Typo="Typo.body2" Class="text-dark mb-4">
+                        What do you do well? What unique resources can you draw on?
+                    </MudText>
+                    <ul class="swot-analysis__list">
+                        @foreach (var item in StrategyTraitsResult.Weaknesses)
+                        {
+                            <li>@item.Name</li>
+                        }
+                    </ul>
+                </MudCardContent>
+            </MudCard>
+        </div>
+        <div class="swot-analysis__grid-item col-xxl-3 col-sm-6 col-12 mb-4">
+            <MudCard Elevation="0" class="swot-analysis__card">
+                <MudImage Src="images/analysis/opportunity.png" Height="80" Width="80" />
+                <MudCardContent Class="pa-0 pt-2">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-1">Opportunities</MudText>
+                    <MudText Typo="Typo.body2" Class="text-dark mb-4">
+                        What do you do well? What unique resources can you draw on?
+                    </MudText>
+                    <ul class="swot-analysis__list">
+                        @foreach (var item in StrategyTraitsResult.Opportunities)
+                        {
+                            <li>@item.Name</li>
+                        }
+                    </ul>
+                </MudCardContent>
+            </MudCard>
+        </div>
+        <div class="swot-analysis__grid-item col-xxl-3 col-sm-6 col-12 mb-4">
+            <MudCard Elevation="0" class="swot-analysis__card">
+                <MudImage Src="images/analysis/threat.png" Height="80" Width="80" />
+                <MudCardContent Class="pa-0 pt-2">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-1">Threats</MudText>
+                    <MudText Typo="Typo.body2" Class="text-dark mb-4">
+                        What do you do well? What unique resources can you draw on?
+                    </MudText>
+                    <ul class="swot-analysis__list">
+                        @foreach (var item in StrategyTraitsResult.Threats)
+                        {
+                            <li>@item.Name</li>
+                        }
+                    </ul>
+                </MudCardContent>
+            </MudCard>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿@page "/candidate/assigned-trainings"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div>
+    <MudTabs Elevation="0" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+        <MudTabPanel Text="Active" BadgeColor="Color.Secondary" BadgeData="@AssignedTrainingCountDto.AvailableCount">
+            @if (ActivePanelIndex == 0)
+            {
+                <AssignedTrainingsList StatusAction="Constants.StatusAction.Available" />
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Expired" BadgeColor="Color.Secondary" BadgeData="@AssignedTrainingCountDto.ExpiredCount">
+            @if (ActivePanelIndex == 1)
+            {
+                <AssignedTrainingsList StatusAction="Constants.StatusAction.Expired" />
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="All" BadgeColor="Color.Secondary" BadgeData="@AssignedTrainingCountDto.AllCount">
+            @if (ActivePanelIndex == 2)
+            {
+                <AssignedTrainingsList StatusAction="Constants.StatusAction.All" />
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>

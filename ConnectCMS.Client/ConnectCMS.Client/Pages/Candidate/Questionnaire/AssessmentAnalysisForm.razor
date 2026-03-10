@@ -1,0 +1,56 @@
+﻿<div class="custom-table inner-padding">
+    <MudText Typo="Typo.h6" HtmlTag="h3" Class="text-dark mb-2">
+        Analytics and Insights
+    </MudText>
+    <MudText Typo="Typo.body2" Class="text-normal mb-6">
+        View the comparision of the details of the personal assessment of the candidate with his / her respective subordinates.
+    </MudText>
+    <div class="table-responsive" style="overflow-x: scroll">
+        <table class="table strategic-trait-table">
+            <thead>
+            <tr>
+                <th style="width:5%">#</th>
+                <th style="min-width: 300px">Question</th>
+                <th>Statistics</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var response in AssessmentResponseAnalysis)
+            {
+                <tr>
+                    <td style="vertical-align: top;">@(AssessmentResponseAnalysis.IndexOf(response) + 1).</td>
+                    <td style="vertical-align: top;">
+                        <MudText Typo="Typo.body2" Class="text-normal">
+                            @response.Question
+                        </MudText>
+                    </td>
+                    <td>
+                        @if (response.QuestionType != QuestionType.LongQuestion.ToString() && response.QuestionType != QuestionType.ShortQuestion.ToString())
+                        {
+                            <BarChart T="ResponseAnalysis" 
+                                      Items="response.Responses"
+                                      Title="Scores"
+                                      Height="170"
+                                      MaxYValue="5"
+                                      Width="500"
+                                      XValue="@(e => e.Respondent)"
+                                      YValue="@(e => e.Sum(z => (decimal) z.Score))"/>
+                        }
+                        else
+                        {
+                            foreach(var responseModel in response.Responses)
+                            {
+                                <MudText Typo="Typo.body2" Class="text-normal mb-4">
+                                    @responseModel.Respondent
+                                </MudText>
+                                <MudTextField T="string" @bind-Value="responseModel.Responses" Variant="Variant.Outlined" ReadOnly="true" Class="mb-6"/>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+

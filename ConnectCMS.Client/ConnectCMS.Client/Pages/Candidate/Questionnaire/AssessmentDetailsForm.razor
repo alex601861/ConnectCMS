@@ -1,0 +1,26 @@
+﻿@page "/assessment-details-form/{UserResponseId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center">
+    <Back NavigationUrl="@($"admin/questionnaire-view-form/{UserResponse.QuestionnaireId}")"/>
+    <MudTooltip Arrow="true" Text="Analysis Comparision" Color="Color.Primary" Placement="Placement.Left">
+        <MudIcon Icon="@Icons.Material.Filled.Info" @onclick="NavigateToAnalysisComparision"/>
+    </MudTooltip>
+</div>
+
+<div class="question-answer-form">
+    @if (TrainingDetails.Id != Guid.Empty)
+    {
+        <TrainingViewDetails TrainingId="@TrainingDetails.Id"/>
+    }
+    <MudTabs Elevation="0" PanelClass="bg-white" Class="gap-3">
+        <MudTabPanel Text="Responses" Icon="@Icons.Material.Filled.QuestionAnswer" BadgeColor="Color.Secondary">
+            <UserResponseDetails UserResponseId="UserResponseId"/>
+        </MudTabPanel>
+        <MudTabPanel Text="Analysis" Icon="@Icons.Material.Filled.Analytics" BadgeColor="Color.Secondary">
+            <AssessmentAnalysisForm UserResponseId="UserResponseId"/>
+        </MudTabPanel>
+    </MudTabs>
+</div>

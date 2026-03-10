@@ -1,0 +1,82 @@
+@if (UserResponseAnalyses.Id == Guid.Empty)
+{
+    if (Role.Name is Constants.Roles.SuperAdmin or Constants.Roles.Admin)
+    {
+        <div class="inner-padding">
+            <div class="mt-4">
+                <div class="row gap-y-6 mb-5">
+                    <div class="col-6">
+                        <MudText Typo="Typo.body2" HtmlTag="h4" Class="text-dark mb-2">Title</MudText>
+                        <MudTextField
+                            @bind-Value="ResponseAnalysis.Title"
+                            For="@(() => ResponseAnalysis.Title)"
+                            Variant="Variant.Outlined"
+                            Placeholder="Enter the title of the analysis"
+                            Class="w-100"/>
+                    </div>
+                    <div class="col-6">
+                        <MudText Typo="Typo.body2" HtmlTag="h4" Class="text-dark mb-2">Score</MudText>
+                        <MudTextField
+                            @bind-Value="ResponseAnalysis.Score"
+                            For="@(() => ResponseAnalysis.Score)"
+                            Variant="Variant.Outlined"
+                            Placeholder="Enter the score of the analysis"
+                            Class="w-100"/>
+                    </div>
+                </div>
+                <div class="row gap-y-6">
+                    <div class="col-12">
+                        <TextEditor
+                            @bind-Value="ResponseAnalysis.Description"
+                            Description="Description"
+                            Height="300px"
+                            CssClass="value-text-editor"/>
+                    </div>
+                    <div class="col-12 text-end">
+                        <MudButton DropShadow="false"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Class="btn btn--md"
+                                   ButtonType="ButtonType.Button"
+                                   OnClick="UploadUserResponseAnalysis">
+                            Submit
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Folder" Title="Analysis Pending" Description="Your responses have not been provided with any of the respective analysis from the administrative controls, please view back later on." />
+        </div>
+    }
+}
+else
+{
+    <div class="inner-padding">
+        <div class="resource-view">
+            <div class="resource-view-grid row gap-y-3">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-12">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-2">Title</MudText>
+                    <MudText Typo="Typo.body1" Class="text-normal">@UserResponseAnalyses.Title</MudText>
+                </div>
+                <div class="col-xl-6 col-lg-6 col-md-6 col-12">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark fw-bold mb-2">Score</MudText>
+                    <MudText Typo="Typo.body1" Class="text-normal">@UserResponseAnalyses.Score</MudText>
+                </div>
+            </div>
+            <div class="resource-view-desc mt-6">
+                <MudCard Class="resource-view-card inner-padding pa-0" Elevation="0">
+                    <MudCardHeader>
+                        <MudText Typo="Typo.subtitle1" HtmlTag="h2" Color="Color.Dark" Class="fw-bold">Description</MudText>
+                    </MudCardHeader>
+                    <MudCardContent Class="py-6 d-flex flex-column gap-y-6">
+                        @((MarkupString)UserResponseAnalyses.Description)
+                    </MudCardContent>
+                </MudCard>
+            </div>
+        </div>
+    </div>
+}

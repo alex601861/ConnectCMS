@@ -1,0 +1,224 @@
+﻿@page "/personality-test-analysis/{UserResponseId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back NavigationUrl="@($"/personality-test-response/{UserResponseId}")"/>
+
+<div class="personality-test-analysis">
+    <div class="personality-test-analysis__header d-flex align-items-center justify-content-between flex-wrap gap-4">
+        <div class="header-left">
+            <MudText Typo="Typo.subtitle1" HtmlTag="span" Class="text-normal fw-bold">
+                <MudImage Src="images/icons/score.svg" Alt="Blue Paper Icon" Height="28" Width="28" />
+                Score
+            </MudText>
+            <MudText Typo="Typo.h5" HtmlTag="h2" Class="text-dark fw-bold mb-1 mt-1">Overview</MudText>
+            <MudText Typo="Typo.body2" Class="text-normal">You will be notified about your personality type.</MudText>
+        </div>
+        <div class="header-right d-flex align-items-center gap-x-3 gap-y-3 flex-wrap">
+            @if (IsOverviewSelected)
+            {
+                <MudButton Variant="@Variant.Text"
+                           OnClick="@SelectOverview"
+                           Class="border-primary">
+                    <MudImage Src="images/opportunity.png" Height="64" Width="64" />
+                    <span>Overview</span>
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Variant="@Variant.Text"
+                           OnClick="@SelectOverview">
+                    <MudImage Src="images/opportunity.png" Height="64" Width="64" />
+                </MudButton>
+            }
+            @foreach (var trait in PersonalityTestAnalysisModel.Scores)
+            {
+                var imagePath = $"images/personality-test/{trait.Trait.ToLower()}.png";
+                if (SelectedTraitAnalysis?.Trait == trait.Trait)
+                {
+                    <MudButton Variant="@Variant.Text"
+                               OnClick="@(() => SelectTrait(trait.Trait))"
+                               Class="border-primary">
+                        <MudImage Src="@imagePath" Height="64" Width="64" />
+                        @trait.Trait (@trait.Score)
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="@Variant.Text"
+                               OnClick="@(() => SelectTrait(trait.Trait))">
+                        <MudImage Src="@imagePath" Height="64" Width="64" />
+                    </MudButton>
+                }
+            }
+        </div>
+    </div>
+    <MudDivider Class="mt-8 mb-6" />
+    <div class="banner flex-wrap flex-sm-nowrap d-flex align-items-center gap-3 pa-5">
+        <div class="banner__image">
+            <MudImage Src="images/icons/paper.svg" Alt="Personality Test" Height="112" Width="118" Class="img-fluid" />
+        </div>
+        <div class="banner__text">
+            <MudText Typo="Typo.h6" HtmlTag="h2" Color="Color.Primary" Class="fw-bold mb-2">
+                What’s your OCEAN personality?
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-normal">
+                An Ocean Personality Test assesses individuals based on five key dimensions: Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism. Take this Ocean Personality Test to discover your unique personality traits, understand your strengths and areas for growth, and gain deeper insights into how you relate to the world around you.
+            </MudText>
+        </div>
+    </div>
+    <div class="ocean-trait mt-16">
+        @if (IsOverviewSelected)
+        {
+            <div class="grid-1 row gap-y-8">
+                <div class="col-xxl-6 col-lg-6 col-12 col">
+                    <div class="ocean-trait__score">
+                        <div class="bar-graph">
+                            @if (IsRendered)
+                            {
+                                @* <BarChart T="PersonalityTestScore"  *@
+                                @*           Items="PersonalityTestAnalysisModel.Scores" *@
+                                @*           Title="Scores" *@
+                                @*           MaxYValue="5" *@
+                                @*           XValue="@(e => $"{e.Trait} ({e.Score})")" *@
+                                @*           YValue="@(e => e.Sum(x => (decimal)x.Score))" /> *@
+
+                                foreach (var score in PersonalityTestAnalysisModel.Scores)
+                                {
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <MudText Typo="Typo.h6" HtmlTag="h2" Color="Color.Dark" Class="fw-bold mb-2">
+                                                @score.Trait
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Class="text-normal">
+                                                @score.Score <MudText Typo="Typo.caption" Class="text-normal"> / 5</MudText>
+                                            </MudText>
+                                        </div>
+                                        
+                                        @{
+                                            var color = PersonalityTestAnalysisModel.Scores.IndexOf(score) switch
+                                            {
+                                                0 => Color.Success,
+                                                1 => Color.Success,
+                                                2 => Color.Info,
+                                                _ => Color.Error
+                                            };
+                                        }
+                                        
+                                        <MudProgressLinear Color="@color" Striped="true" Size="Size.Medium" Value="@(score.Score * 20)" Class="my-7" />
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-12 col">
+                    <div class="d-flex flex-column w-100 gap-y-8 ocean-trait__desc">
+                        @foreach (var item in PersonalityTestAnalysisModel.Analyses)
+                        {
+                            <div class="d-flex gap-x-4">
+                                <MudImage Src="images/icons/sq-chevron-right.svg" Alt="Square Chevron Right in Blue" Height="20" Width="20" />
+                                <div class="text">
+                                    <MudText Typo="Typo.h6" HtmlTag="h3" Class="text-dark fw-bold">
+                                        @item.Trait
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Class="text-normal">
+                                        @item.Description
+                                    </MudText>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="grid-2 row gap-y-8">
+                <div class="col-lg-6 col-md-6 col-12 col">
+                    @if (SelectedTraitAnalysis != null)
+                    {
+                        <div class="d-flex flex-column w-100 gap-y-4">
+                            @foreach (var facet in SelectedTraitAnalysis.Facets ?? new())
+                            {
+                                var imagePath = $"images/personality-test/{facet.Trait.ToLower()}.png";
+
+                                if (SelectedFacet?.Trait == facet.Trait)
+                                {
+                                    <div @onclick="@(() => SelectFacet(facet))" class="card border-primary">
+                                        <div class="d-flex gap-x-4 align-items-center">
+                                            <MudImage Src="@imagePath" Height="64" Width="64"/>
+                                            <MudText Typo="Typo.h5" Class="text-dark fw-bold">@facet.Trait</MudText>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div @onclick="@(() => SelectFacet(facet))" class="card">
+                                        <div class="d-flex gap-x-4 align-items-center">
+                                            <MudImage Src="@imagePath" Height="64" Width="64"/>
+                                            <MudText Typo="Typo.h5" Class="text-dark fw-bold">@facet.Trait</MudText>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-12 col">
+                    <div class="d-flex flex-column w-100 gap-y-8">
+                        @if (SelectedTraitAnalysis != null)
+                        {
+                            <div class="d-flex justify-content-center align-items-center flex-column gap-y-6">
+                                @{
+                                    var traitImagePath = $"images/personality-test/analysis/{SelectedTraitAnalysis.Trait.ToLower()}.svg";
+                                }
+                                <MudImage Src="@traitImagePath" Alt="Image" Height="262" Width="332" Class="img-fluid"/>
+
+                                <div class="d-flex justify-content-center flex-column gap-y-6">
+                                    <div class="text text-center">
+                                        <MudText Typo="Typo.h6" HtmlTag="h3" Class="text-dark fw-bold">
+                                            @SelectedTraitAnalysis.Trait
+                                        </MudText>
+                                    </div>
+                                    <div class="text-center">
+                                        <MudText Typo="Typo.body1" Class="text-dark">
+                                            @SelectedTraitAnalysis.Description
+                                        </MudText>
+                                    </div>
+                                </div>
+                            </div>
+
+                            if (SelectedFacet != null)
+                            {
+                                <MudDivider Class="my-4" />
+
+                                <div class="text text-center">
+                                    <MudImage Src="images/icons/sq-chevron-right.svg" Alt="Square Chevron Right in Blue" Height="20" Width="20" />
+                                    <MudText Typo="Typo.h6" HtmlTag="h3" Class="text-dark fw-bold">
+                                        @SelectedFacet.Trait
+                                    </MudText>
+                                </div>
+                                <div class="result text-center">
+                                    <MudText Typo="Typo.body1" Class="text-dark">
+                                        @SelectedFacet.Description
+                                    </MudText>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="result text-center">
+                                <MudText Typo="Typo.body1" Class="text-dark">
+                                    Please select a trait to view details.
+                                </MudText>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

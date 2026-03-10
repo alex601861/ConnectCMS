@@ -1,0 +1,229 @@
+﻿@page "/subordinate-answer-upload-form/{QuestionnaireId:guid}/{SubordinateId:guid}"
+@layout EmptyLayout
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="container">
+    <div class="question-answer-form my-5">
+        <TrainingViewDetails TrainingId="@Training.Id" />
+        <div class="d-flex mb-5">
+            <div class="header-text col-10">
+                <MudText Typo="Typo.h6" Class="fw-bold text-dark">
+                    Namaste @Subordinate.Name 🙏 -
+                    <MudText Typo="Typo.subtitle2" HtmlTag="span" Class="text-normal">View the following personal evaluation form for your registered candidate.</MudText>
+                </MudText>
+            </div>
+            <div class="col-2 text-end">
+                <MudTooltip Text="Candidate Details" Color="Color.Primary" Arrow="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" @onclick="OpenCloseCandidateDetailsModal" />
+                </MudTooltip>
+            </div>
+        </div>
+        <MudPaper Outlined="true" Class="inner-bg">
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="text-dark mb-2">
+                @Inspection.Name
+            </MudText>
+            <MudTooltip Arrow="true" Text="Inspection Details" Color="Color.Primary" Placement="Placement.Left">
+                <MudIcon Icon="@Icons.Material.Filled.Info" @onclick="OpenCloseInspectionModal" />
+            </MudTooltip>
+            <MudText Typo="Typo.body2" Class="text-normal mb-6">
+                @((MarkupString)Inspection.Description)
+            </MudText>
+            <form class="form-wrapper">
+                @foreach (var question in QuestionDetails)
+                {
+                    <div class="form-content">
+                        @* @if (!string.IsNullOrEmpty(question.Heading)) *@
+                        @* { *@
+                        @*     <div class="custom-breadcrumb"> *@
+                        @*         <MudText Typo="Typo.h6" HtmlTag="span" Class="text-dark fw-bold"> *@
+                        @*             @question.Heading *@
+                        @*         </MudText> *@
+                        @*     </div> *@
+                        @* } *@
+                        <div class="question">
+                            <MudText Typo="Typo.h6" HtmlTag="h4" Class="text-dark fw-500">
+                                @question.Title
+                                <MudText HtmlTag="sup" Class="top-0" Color="Color.Error">*</MudText>
+                            </MudText>
+                        </div>
+                        <div class="answer">
+                            @if (question.Type == QuestionType.SingleSelectMcq.ToString())
+                            {
+                                <div class="d-flex align-items-center gap-x-5">
+                                    <MudText Typo="Typo.subtitle2" Class="text-light">@question.Answers.First().Title</MudText>
+                                    <MudRadioGroup T="Guid"
+                                                   @bind-Value="question.SingleSelectAnswerId"
+                                                   Class="d-flex justify-content-between align-items-center">
+                                        @for (var i = 0; i < question.Answers.Count; i++)
+                                        {
+                                            var answer = question.Answers[i];
+                                            var size = i == 0 || i == question.Answers.Count - 1
+                                                ? Size.Large
+                                                : i == 1 || i == question.Answers.Count - 2
+                                                    ? Size.Medium
+                                                    : Size.Small;
+
+                                            var color = i switch
+                                            {
+                                                0 => Color.Success,
+                                                1 => Color.Success,
+                                                2 => Color.Info,
+                                                _ => Color.Error
+                                            };
+
+                                            <MudRadio Value="@(answer.Id)" Color="@color" Size="@size" Class="mx-0"/>
+                                        }
+                                    </MudRadioGroup>
+                                    <MudText Typo="Typo.subtitle2" Class="text-light">@question.Answers.Last().Title</MudText>
+                                </div>
+                                @* <MudRadioGroup @bind-Value="question.SingleSelectAnswerId" Class="custom-radio-btn"> *@
+                                @*     @foreach (var answer in question.Answers) *@
+                                @*     { *@
+                                @*         <MudRadio Value="@(answer.Id)" Color="Color.Secondary" UncheckedColor="Color.Default" Class="mx-0"> *@
+                                @*             @answer.Title *@
+                                @*         </MudRadio> *@
+                                @*     } *@
+                                @* </MudRadioGroup> *@
+                            }
+                            else if (question.Type == QuestionType.MultiSelectMcq.ToString())
+                            {
+                                <div class="custom-radio-btn">
+                                    @foreach (var answer in question.Answers)
+                                    {
+                                        <div class="mud-input-control mud-input-control-boolean-input mb-2">
+                                            @if (question.MultiSelectAnswerIds != null && question.MultiSelectAnswerIds.Contains(answer.Id))
+                                            {
+                                                <div class="checked d-flex align-items-center gap-x-2">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.CheckBox" aria-label="delete" Color="Color.Secondary" Class="pa-0" OnClick="() => OnCheckedChanged(question, answer.Id)"/>
+                                                    <MudText Typo="Typo.subtitle2" Class="fw-bold">@answer.Title</MudText>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="checked d-flex align-items-center gap-x-2">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.CheckBoxOutlineBlank" aria-label="delete" Color="Color.Secondary" Class="pa-0" OnClick="() => OnCheckedChanged(question, answer.Id)"/>
+                                                    <MudText Typo="Typo.subtitle2" Class="fw-bold">@answer.Title</MudText>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else if (question.Type == QuestionType.Rating.ToString())
+                            {
+                                <MudRating @bind-SelectedValue="question.Rating" MaxValue="5"/>
+                            }
+                            else if (question.Type == QuestionType.ShortQuestion.ToString())
+                            {
+                                <MudTextField T="string" @bind-Value="question.Answer" Label="Answer" Variant="Variant.Outlined" Placeholder="Please enter your answer..." />
+                            }
+                            else if (question.Type == QuestionType.LongQuestion.ToString())
+                            {
+                                <MudTextField T="string" @bind-Value="question.Answer" Label="Answer" Variant="Variant.Outlined" Placeholder="Please enter your answer..." Lines="7" Immediate="true"/>
+                            }
+                        </div>
+                    </div>
+                }
+                <MudDivider Class="my-3" Style="border-color: #000000"/>
+                <div class="form-content">
+                    <div class="custom-breadcrumb">
+                        <MudText Typo="Typo.h6" HtmlTag="span" Class="text-dark fw-bold">
+                            Remarks
+                        </MudText>
+                    </div>
+                    <div class="question">
+                        <MudText Typo="Typo.subtitle2" HtmlTag="h4" Class="text-dark fw-500">
+                            Please provide your remarks over the following questionnaire assessment.
+                        </MudText>
+                    </div>
+                    <div class="answer">
+                        <MudTextField T="string" @bind-Value="Remarks" Label="Remarks" Variant="Variant.Outlined" Placeholder="Please provide your remarks here ..." Lines="7"/>
+                    </div>
+                </div>
+                <div class="form-btn text-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="btn btn--md" DropShadow="false" Disabled="@(!IsAnswerDetailsValid() || IsDisabled)" OnClick="@OnAnswerSubmission">Submit</MudButton>
+                </div>
+            </form>
+        </MudPaper>
+    </div>
+</div>
+
+@if (IsInspectionModalOpen)
+{
+    <ModalLayout T="@GetInspectionDto"
+                 Module="Inspection Module"
+                 Title="@Inspection.Name"
+                 Description="View the details of the respective inspection."
+                 SubmitColor="Color.Primary"
+                 Size="modal-lg"
+                 OnSave="@OpenCloseInspectionModal"
+                 CancelLabel="Discard">
+        <InspectionViewDetails InspectionId="@Inspection.Id"/>
+    </ModalLayout>
+}
+
+@if (IsCandidateDetailsModalOpen)
+{
+    <ModalLayout T="@GetCandidateDetailsDto"
+                 Module="Candidate Details"
+                 Title="Candidate Details"
+                 Description="View the details of your respective allocated Candidate."
+                 SubmitColor="Color.Primary"
+                 Size="modal-lg"
+                 OnSave="@OpenCloseCandidateDetailsModal"
+                 CancelLabel="Discard">
+        <div class="d-flex flex-column gap-4">
+            <div class="row gap-y-5">
+                <div class="col-12 text-center">
+                    <Avatar Height="100" 
+                            Width="100" 
+                            Name="@CandidateDetails.Name" 
+                            FilePath="@(Constants.FilePath.UsersImagesFilePath)"
+                            ImageUrl="@CandidateDetails.ImageUrl" />
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudTextField @bind-Value="CandidateDetails.Name" Label="Full Name" For="@(() => CandidateDetails.Name)" Variant="Variant.Outlined" ReadOnly="true" />
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudTextField @bind-Value="CandidateDetails.EmailAddress" For="@(() => CandidateDetails.EmailAddress)" Label="Email Address" Variant="Variant.Outlined" ReadOnly="true" />
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudTextField @bind-Value="CandidateDetails.PhoneNumber" Label="Phone Number" For="@(() => CandidateDetails.PhoneNumber)" Variant="Variant.Outlined" InputType="InputType.Number" ReadOnly="true" />
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudText Typo="Typo.subtitle1" Class="text-dark">Gender</MudText>
+                    <MudRadioGroup T="string" @bind-Value="@CandidateDetails.Gender" ReadOnly="true">
+                        <MudRadio Value="@(GenderType.Male.ToString())" Color="Color.Secondary">
+                            <MudText Typo="Typo.subtitle2" Class="text-dark">Male</MudText>
+                        </MudRadio>
+                        <MudRadio Value="@(GenderType.Female.ToString())" Color="Color.Error">
+                            <MudText Typo="Typo.subtitle2" Class="text-dark">Female</MudText>
+                        </MudRadio>
+                        <MudRadio Value="@(GenderType.Other.ToString())" Color="Color.Primary">
+                            <MudText Typo="Typo.subtitle2" Class="text-dark">Other</MudText>
+                        </MudRadio>
+                    </MudRadioGroup>
+                </div>
+                <div class="col-xl-6 col-md-6 col-12 d-flex align-items-center">
+                    @if (CandidateDetails.Organization == null)
+                    {
+                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                            <span>Self Registered Candidate</span>
+                        </MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Warning">
+                            <span>Organizational Candidate</span>
+                        </MudChip>
+                    }
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudTextField @bind-Value="CandidateDetails.Designation" Label="Designation" For="@(() => CandidateDetails.Designation)" Variant="Variant.Outlined" ReadOnly="true" />
+                </div>
+            </div>
+        </div>
+    </ModalLayout>
+}

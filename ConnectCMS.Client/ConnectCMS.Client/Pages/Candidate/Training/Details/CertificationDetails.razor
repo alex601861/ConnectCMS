@@ -1,0 +1,17 @@
+﻿@if (Certification == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="inner-padding">
+        @if (Certification.Id == Guid.Empty)
+        {
+            <Message Icon="@Animations.Regular.Folder" Title="Empty Repository" Description="You have not been provided with any of the certifications yet, please verify all of your attendances and submit all sets of questionnaires module." />
+        }
+        else
+        {
+            <CertificationInformation Certification="Certification" />
+        }
+    </div>
+}

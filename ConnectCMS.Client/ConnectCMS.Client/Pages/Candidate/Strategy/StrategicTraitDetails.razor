@@ -1,0 +1,70 @@
+﻿@page "/strategic-trait-details"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (StrategicTraitQuestionnaireResponses == null)
+{
+    <Loader />
+}
+else
+{
+    <Back />
+
+    <div class="custom-table">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center">
+                <MudStack>
+                    <MudDateRangePicker @ref="Picker" Label="Date Filter" @bind-DateRange="DateRange" PickerVariant="PickerVariant.Dialog">
+                        <PickerActions>
+                            <MudButton Class="mr-auto align-self-start" OnClick="@(() => OnDateRangeFilter(false))">Clear</MudButton>
+                            <MudButton OnClick="@(() => Picker.CloseAsync(false))">Cancel</MudButton>
+                            <MudButton Color="Color.Primary" OnClick="@(() => OnDateRangeFilter(true))">Filter</MudButton>
+                        </PickerActions>
+                    </MudDateRangePicker>
+                </MudStack>
+            </div>
+            <div class="filter-right">
+                <MudButton Color="Color.Primary" DropShadow="false" class="btn btn--md" Variant="Variant.Filled" OnClick="NavigateToQuestionnaire">SWOT Analysis</MudButton>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table analysis-table">
+                <thead>
+                <th>#</th>
+                <th>Answered Date</th>
+                <th>Strengths</th>
+                <th>Weaknesses</th>
+                <th>Opportunities</th>
+                <th>Threats</th>
+                <th>Details</th>
+                </thead>
+                <tbody>
+                    @foreach (var item in StrategicTraitQuestionnaireResponses.Result)
+                    {
+                        <tr>
+                            <td>@(StrategicTraitQuestionnaireResponses.Result.IndexOf(item) + 1).</td>
+                            <td>@item.AnsweredDate</td>
+                            <td>@item.Strengths</td>
+                            <td>@item.Weaknesses</td>
+                            <td>@item.Opportunities</td>
+                            <td>@item.Threats</td>
+                            <td>
+                                <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="images/icons/eye.svg" Alt="Eye Icon" Width="18" Height="18" @onclick="() => NavigateToResponseDetails(item.Id)" />
+                                </MudTooltip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="StrategicTraitQuestionnaireResponses.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="StrategicTraitQuestionnaireResponses.TotalCount" />
+    </div>
+}

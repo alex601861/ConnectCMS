@@ -1,0 +1,50 @@
+﻿@if (IsLoading)
+{
+    <Loader />
+}
+else
+{
+    if (!IsAttendanceAvailable)
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock" Title="Attendance Unavailable" Description="The following attendance markup portal is not accessible at the moment, they may have already been expired or are not accessible at the moment." />
+        </div>
+    }
+    else
+    {
+        if (!IsPositionSetup)
+        {
+            <div class="inner-padding">
+                <Message Icon="@Animations.Regular.Lock" Title="Permission Required" Description="Please enable your location before marking your attendance in the portal.">
+                    <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Filled" Class="btn btn--sm" OnClick="GetGeolocationDetails" StartIcon="@Icons.Material.Filled.LocationCity">
+                        Get My Location
+                    </MudButton>
+                </Message>
+            </div>
+        }
+        else
+        {
+            if (IsLocationValidForAttendance)
+            {
+                <div class="signature-wrapper">
+                    <SignaturePad @bind-Value="Signature" Class="signature_pad" ClearButtonClass="btn btn--md btn-primary mt-8" />
+                </div>
+                <div class="col-12 d-flex justify-content-end mt-3">
+                    <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Filled" Class="btn btn--md" OnClick="OnAttendanceUpload" Disabled="@(Signature.Length == 0)">
+                        Mark Attendance
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <div class="inner-padding">
+                    <Message Icon="@Animations.Regular.Lock" Title="Attendance Unauthorized" Description="@LocationDistanceValidityMessage">
+                        <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Filled" Class="btn btn--sm" OnClick="GetGeolocationDetails" StartIcon="@Icons.Material.Filled.LocationCity">
+                            Get My Location
+                        </MudButton>
+                    </Message>
+                </div>
+            }
+        }
+    }
+}

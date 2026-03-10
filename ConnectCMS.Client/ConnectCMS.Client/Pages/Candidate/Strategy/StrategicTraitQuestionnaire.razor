@@ -1,0 +1,73 @@
+﻿@page "/strategic-trait-questionnaire/{QuestionnaireId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back />
+
+@if (IsLoading)
+{
+    <Loader />
+}
+else
+{
+    if (QuestionnaireValidity is { IsValid: false, IsAnswered: false })
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock"
+                     Title="Questionnaire Unavailable" 
+                     Description="The following SWOT Analysis is unavailable at the moment, please try on a later time period." />
+        </div>
+    }
+    else if (QuestionnaireValidity is { IsValid: true, IsAnswered: true })
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock"
+                     Title="Questionnaire Unavailable"
+                     Description="You have already answered the respective module for SWOT Analysis." />
+        </div>
+    }
+    else if (QuestionnaireValidity is { IsValid: false, IsAnswered: true })
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock"
+                     Title="Questionnaire Unavailable"
+                     Description="You have already answered the respective module for SWOT Analysis." />
+        </div>
+    }
+    else if (QuestionnaireValidity is { IsValid: true, IsAnswered: false })
+    {
+        <div class="strategic-trait-questionnaire">
+            <MudTabs Elevation="0" PanelClass="bg-white" Class="gap-3 mb-5">
+                <MudTabPanel Text="Strengths" Icon="@Icons.Material.Filled.HdrStrong" BadgeColor="Color.Secondary">
+                    <StrategicTraitQuestionnaireDetails
+                        Title="Strengths"
+                        StrategicType="StrategicType.Strength"
+                        Description="Please select at least 3 of your strengths and at most 7 out of it."
+                        Icon="images/icons/strength.svg"
+                        Traits="Strengths"
+                        SelectedTraitIds="SelectedStrengthIds"
+                        Type="StrategicType.Strength"
+                        OnSelectStrategicTrait="OnSelectStrategicTrait"/>
+                </MudTabPanel>
+                <MudTabPanel Text="Weaknesses" Icon="@Icons.Material.Filled.HdrWeak" BadgeColor="Color.Secondary">
+                    <StrategicTraitQuestionnaireDetails
+                        Title="Weaknesses"
+                        StrategicType="StrategicType.Weakness"
+                        Description="Please select at least 3 of your weaknesses and at most 7 out of it."
+                        Icon="images/icons/weakness.svg"
+                        Traits="Weaknesses"
+                        SelectedTraitIds="SelectedWeaknessIds"
+                        Type="StrategicType.Weakness"
+                        OnSelectStrategicTrait="OnSelectStrategicTrait"/>
+                </MudTabPanel>
+            </MudTabs>
+
+            <div class="text-end mt-6">
+                <MudButton DropShadow="false" Color="Color.Primary" Class="btn btn--md" Disabled="@(IsDisabled)" Variant="Variant.Filled" OnClick="UploadStrategicTraits">
+                    Save
+                </MudButton>
+            </div>
+        </div>
+    }
+}

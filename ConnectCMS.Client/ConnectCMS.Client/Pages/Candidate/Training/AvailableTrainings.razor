@@ -1,0 +1,27 @@
+﻿@page "/candidate/available-trainings"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div>
+    <MudTabs Elevation="0" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+        <MudTabPanel Text="Available" BadgeColor="Color.Secondary" BadgeData="@AvailableTrainingCountDto.AvailableCount">
+            @if (ActivePanelIndex == 0)
+            {
+                <AvailableTrainingsList RequestAction="Constants.RequestAction.Available" OnAvailableTrainingsCountUpdate="HandleAvailableTrainingCountsForCandidate"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Pending" BadgeColor="Color.Secondary" BadgeData="@AvailableTrainingCountDto.PendingCount">
+            @if (ActivePanelIndex == 1)
+            {
+                <AvailableTrainingsList RequestAction="Constants.RequestAction.Pending" OnAvailableTrainingsCountUpdate="HandleAvailableTrainingCountsForCandidate"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Rejected" BadgeColor="Color.Secondary" BadgeData="@AvailableTrainingCountDto.RejectedCount">
+            @if (ActivePanelIndex == 2)
+            {
+                <AvailableTrainingsList RequestAction="Constants.RequestAction.Rejected" OnAvailableTrainingsCountUpdate="HandleAvailableTrainingCountsForCandidate"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>

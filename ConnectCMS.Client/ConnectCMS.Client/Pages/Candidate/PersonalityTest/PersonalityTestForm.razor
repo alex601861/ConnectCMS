@@ -1,0 +1,109 @@
+﻿@page "/personality-test/{QuestionnaireId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back />
+
+@if (IsLoading)
+{
+    <Loader />
+}
+else
+{
+    if (QuestionnaireValidity is { IsValid: false, IsAnswered: false })
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock"
+                     Title="Questionnaire Unavailable" 
+                     Description="The following Personality Test is unavailable at the moment, please try on a later time period." />
+        </div>
+    }
+    else if (QuestionnaireValidity is { IsValid: true, IsAnswered: true })
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock"
+                     Title="Questionnaire Unavailable"
+                     Description="You have already answered the respective module for Personality Test." />
+        </div>
+    }
+    else if (QuestionnaireValidity is { IsValid: false, IsAnswered: true })
+    {
+        <div class="inner-padding">
+            <Message Icon="@Animations.Regular.Lock"
+                     Title="Questionnaire Unavailable"
+                     Description="You have already answered the respective module for Personality Test." />
+        </div>
+    }
+    else if (QuestionnaireValidity is { IsValid: true, IsAnswered: false })
+    {
+        <div class="personality-test">
+            <div class="col-xxl-8 col-xl-10 col-12 mx-auto">
+                <div class="title mb-8">
+                    <MudText Typo="Typo.h2" HtmlTag="h2" Class="text-dark fw-bold mb-2 text-center">Personality Test</MudText>
+                </div>
+                <div class="personality-stepper-form mb-5">
+                    <div class="stepper-body text-center">
+                        <MudTabs Elevation="0" @bind-ActivePanelIndex="ActivePanelIndex" Class="d-block">
+                            @foreach (var item in QuestionnaireDetails.QuestionnaireTraits)
+                            {
+                                var step = $"Step {QuestionnaireDetails.QuestionnaireTraits.IndexOf(item) + 1}";
+                                
+                                <MudTabPanel Text="@step"
+                                             BadgeColor="Color.Secondary"
+                                             BadgeData="@item.QuestionCount">
+                                    @if (ActivePanelIndex == QuestionnaireDetails.QuestionnaireTraits.IndexOf(item))
+                                    {
+                                        <PersonalityTestUploadForm Trait="@item.Trait"
+                                                                   Facets="item.Facets"
+                                                                   SelectedAnswers="PersonalityTestQuestionnaireAnswers"
+                                                                   OnAnswerSelected="StateHasChanged"/>
+                                    }
+                                </MudTabPanel>
+                            }
+                        </MudTabs>
+                    </div>
+                </div>
+                <div class="form-btn d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+                    <div class="form-btn__left">
+                        @if (ActivePanelIndex > 0)
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       Class="btn btn--md"
+                                       DropShadow="false"
+                                       Disabled="@(ActivePanelIndex == 0)"
+                                       OnClick="@(() => NavigateTabs(false))">
+                                Previous
+                            </MudButton>
+                        }
+                    </div>
+                    <div class="form-btn__right">
+                        @if (ActivePanelIndex < QuestionnaireDetails.QuestionnaireTraits.Count - 1)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Class="btn btn--md"
+                                       DropShadow="false"
+                                       Disabled="@(!ValidateCurrentTab())"
+                                       OnClick="@(() => NavigateTabs(true))">
+                                Next
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Class="btn btn--md"
+                                       DropShadow="false"
+                                       Disabled="@(!ValidateCurrentTab() || IsDisabled)"
+                                       OnClick="OnHandlePersonalityTestSubmission">
+                                Submit
+                            </MudButton>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

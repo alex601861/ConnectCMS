@@ -1,0 +1,53 @@
+@page "/candidate/assigned-trainings/candidate-class-details/{ClassId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="candidate-class-details">
+    <Back NavigationUrl="@($"/candidate/assigned-trainings/training-details/{ClassDetails.TrainingId}/1")" />
+    
+    <div class="mb-8">
+        <ClassDetails ClassId="ClassId"/>
+    </div>
+
+    <MudTabs Elevation="0" PanelClass="bg-white" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-y-5">
+        <MudTabPanel Text="Resource Materials" BadgeData="@ClassCountDto.ResourceMaterialCount" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.Folder">
+            @if (ActivePanelIndex == 0)
+            {
+                <ResourceDetails IsEditable="false"
+                                 IsMaterialForTraining="false"
+                                 IsAccessedByAdmin="false"
+                                 ModuleId="ClassId" 
+                                 IsDeletable="false"/>
+            }
+        </MudTabPanel>
+
+        <MudTabPanel Text="Attendances" BadgeData="@ClassCountDto.AttendanceCount" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.CheckCircle">
+            @if (ActivePanelIndex == 1)
+            {
+                if (Attendance == null)
+                {
+                    <Loader/>
+                }
+                else
+                {
+                    if (Attendance.Id == null)
+                    {
+                        <AttendanceUpload ClassId="ClassDetails.Id" TrainingId="ClassDetails.TrainingId" OnAttendanceMarkup="HandleAttendanceUpload" />
+                    }
+                    else
+                    {
+                        <AttendanceDetails ClassId="ClassDetails.Id" OnAttendanceMarkup="HandleAttendanceUpload" Attendance="Attendance"/>
+                    }
+                }
+            }
+        </MudTabPanel>
+
+        <MudTabPanel Text="Trainers" BadgeData="@ClassCountDto.TrainersCount" BadgeColor="Color.Secondary" Icon="@Icons.Material.Filled.Person">
+            @if (ActivePanelIndex == 2)
+            {
+                <TrainerDetails ModuleId="ClassId" IsAssignable="false" IsTrainerForTraining="false"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>

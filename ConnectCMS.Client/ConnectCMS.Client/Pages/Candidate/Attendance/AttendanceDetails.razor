@@ -1,0 +1,85 @@
+<div class="inner-padding">
+    <div class="custom-table">
+        <div class="table-responsive">
+            <table class="table attendance-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th style="width: 10%">Attendance</th>
+                        <th>Attended At</th>
+                        <th>Remarks</th>
+                        <th>Status</th>
+                        <th>Action By</th>
+                        <th>Action At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1.</td>
+                        <td>
+                            <MudTooltip Text="Download Attendance" Color="Color.Primary" Arrow="true">
+                                <MudImage Src="images/icons/download.svg" Alt="Download Icon" Height="20" Width="20" Class="img-fluid" @onclick="() => DownloadAttendanceImage(Attendance.Id ?? Guid.Empty)" />
+                            </MudTooltip>
+                        </td>
+                        <td>@Attendance.AttendedAt</td>
+                        <td>@Attendance.Remarks</td>
+                        <td>
+                            @switch (Attendance)
+                            {
+                                case { IsActionCompleted: true, IsApproved: true }:
+                                    <MudButton Color="Color.Success" DropShadow="false" Variant="Variant.Outlined" Class="btn">Approved</MudButton>
+                                    break;
+                                case { IsActionCompleted: true, IsApproved: false }:
+                                    <MudButton Color="Color.Error" DropShadow="false" Variant="Variant.Outlined" Class="btn">Rejected</MudButton>
+                                    break;
+                                case { IsActionCompleted: false, IsApproved: false }:
+                                    <MudButton Color="Color.Secondary" DropShadow="false" Variant="Variant.Outlined" Class="btn">Pending</MudButton>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(Attendance.ApprovedBy))
+                            {
+                                @($"{Attendance.ApprovedBy} ({Attendance.ApprovalRole})")
+                            }
+                        </td>
+                        <td>@Attendance.ActionDate</td>
+                        <td>
+                            @if (Attendance.IsActionCompleted == false)
+                            {
+                              <MudTooltip Text="Cancel" Color="Color.Primary" Arrow="true">
+                                <MudImage Src="images/icons/reject.svg" Alt="Cross Icon" Height="18" Width="18" @onclick="OpenAttendanceCancelModal" />
+                              </MudTooltip>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (IsAttendanceCancelModalOpen)
+    {
+        <ModalLayout T="@GetAttendanceResponseDto"
+                     Module="Class Details"
+                     Title="Cancel Attendance"
+                     Description="Please proceed on with the following steps for your attendance request cancellation."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OnCancelAttendance"
+                     SubmitLabel="Unmark Attendance"
+                     Alignment="Center"
+                     CancelLabel="Discard">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@Animations.Regular.Rules"
+                          Trigger="loop" />
+                <MudText Class="hfs4 data fw-600">
+                    You have to send another approval request before being approved to the following class's attendance.
+                </MudText>
+            </div>
+        </ModalLayout>
+    }
+</div>

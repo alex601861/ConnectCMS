@@ -1,0 +1,174 @@
+﻿@if (Subordinates is null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <Filter OnFilterApplication="OnSubordinatesFilter">
+                    <MudSelect T="int?" @bind-Value="Type" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@(Constants.SubordinateType.All)">@Constants.SubordinateType.AllAction</MudSelectItem>
+                        <MudSelectItem Value="@(Constants.SubordinateType.Junior as int?)">@Constants.SubordinateType.JuniorAction</MudSelectItem>
+                        <MudSelectItem Value="@(Constants.SubordinateType.Peer as int?)">@Constants.SubordinateType.PeerAction</MudSelectItem>
+                        <MudSelectItem Value="@(Constants.SubordinateType.Supervisor as int?)">@Constants.SubordinateType.SupervisorAction</MudSelectItem>
+                    </MudSelect>
+                </Filter>
+            </div>
+            <div class="filter-right">
+                @if (TrainingCandidateAssignment.IsSelfRegistered)
+                {
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateSubordinateModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Subordinate</MudButton>
+                }
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table format-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Email</th>
+                        <th>Contact Number</th>
+                        <th>Inspections</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Subordinates.Result)
+                    {
+                        <tr>
+                            <td>@(Subordinates.Result.IndexOf(item) + 1).</td>
+                            <td>@item.Name</td>
+                            <td>@item.Type</td>
+                            <td>@item.Email</td>
+                            <td>@item.ContactNumber</td>
+                            <td>
+                                <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenTrainingInspectionQuestionnaireDetailsModal(item.Id)" />
+                                </MudTooltip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Subordinates.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Subordinates.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateCandidateSubordinateDto"
+                     Module="Training"
+                     Title="Add Subordinate"
+                     Description="Please fill in the the following form to add details of your subordinate"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertSubordinate"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateSubordinateButtonDisabled">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudTextField @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.Name" Label="Name" For="@(() => CreateCandidateSubordinateDto.SubordinateDetails.Name)" Variant="Variant.Outlined" Placeholder="Enter the Subordinate Name " Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudTextField @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.Email" Label="Email" Variant="Variant.Outlined" Placeholder="Enter the Subordinate Email" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudTextField @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.ContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Enter the Contact Number" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudSelect @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.Type" Label="Subordinate" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (SubordinateType type in Enum.GetValues(typeof(SubordinateType)))
+                            {
+                                <MudSelectItem Value="@(type)">@type.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsTrainingInspectionQuestionnaireDetailsModalOpen)
+    {
+        <ModalLayout T="@GetSubordinateTrainingInspectionDto"
+                     Module="Questionnaire"
+                     Title="Training Inspection"
+                     Description="Please follow the respective details to view and access your questionnaire."
+                     SubmitColor="Color.Primary"
+                     Size="modal-xl"
+                     OnSave="@OpenCloseTrainingInspectionQuestionnaireDetailsModal"
+                     CancelLabel="Discard">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Period</th>
+                            <th>Eligibility</th>
+                            <th>Answer Status</th>
+                            <th>Answered Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var questionnaire in SubordinateTrainingInspectionDetails.QuestionnaireResponses)
+                        {
+                            <tr>
+                                <td>@(SubordinateTrainingInspectionDetails.QuestionnaireResponses.IndexOf(questionnaire) + 1).</td>
+                                <td>@questionnaire.EligibilityPeriod</td>
+                                <td>
+                                    <ActivationStatus IsActive="@questionnaire.IsEligible" />
+                                </td>
+                                <td>
+                                    @if (questionnaire.UserResponseId == null)
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Warning">
+                                            <span>Not Answered</span>
+                                        </MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                            <span>Answered</span>
+                                        </MudChip>
+                                    }
+                                </td>
+                                <td>@questionnaire.AnsweredDate</td>
+                                <td>
+                                    @if (questionnaire.UserResponseId == null)
+                                    {
+                                        if (questionnaire.IsEligible)
+                                        {
+                                             <MudTooltip Text="Questionnaire to Clipboard" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/copy.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => CopyQuestionnaireAnswerUploadForm(questionnaire.QuestionnaireId, questionnaire.SubordinateId)" />
+                                     </MudTooltip>
+                                        }
+                                    }
+                                    else
+                                    {
+                                         <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToAnswerDetailsForm(questionnaire.UserResponseId ?? Guid.Empty)" />
+                                </MudTooltip>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </ModalLayout>
+    }
+}

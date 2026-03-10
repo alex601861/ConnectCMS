@@ -1,0 +1,27 @@
+﻿@page "/training-requests"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div>
+    <MudTabs Elevation="0" PanelClass="bg-white" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+        <MudTabPanel Text="Pending" BadgeColor="Color.Secondary" BadgeData="@ApprovalMatrixCountDto.PendingCount">
+            @if (ActivePanelIndex == 0)
+            {
+                <RequestDetails  RequestAction="Constants.RequestAction.Pending" />
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Approved" BadgeColor="Color.Secondary" BadgeData="@ApprovalMatrixCountDto.ApprovedCount">
+            @if (ActivePanelIndex == 1)
+            {
+                <RequestDetails RequestAction="Constants.RequestAction.Accepted" ShowRemarks="true"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Rejected" BadgeColor="Color.Secondary" BadgeData="@ApprovalMatrixCountDto.RejectedCount">
+            @if (ActivePanelIndex == 2)
+            {
+                <RequestDetails RequestAction="Constants.RequestAction.Rejected" ShowRemarks="true"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>

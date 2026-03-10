@@ -1,0 +1,16 @@
+﻿<div class="grid-item inner-padding bg-white pa-4">
+    <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="text-dark fw-bold mb-4">
+        @Title
+    </MudText>
+    <div class="inner-grid gap-x-10 gap-y-3">
+        @foreach (var trait in Traits)
+        {
+            <div class="grid-item">
+                <MudText Typo="Typo.body2" Class="text-dark">
+                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Primary" Style="font-size: 10px" />
+                    @trait.Name
+                </MudText>
+            </div>
+        }
+    </div>
+</div>

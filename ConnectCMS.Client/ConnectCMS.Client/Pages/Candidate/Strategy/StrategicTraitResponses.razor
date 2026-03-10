@@ -1,0 +1,38 @@
+﻿@page "/strategic-trait-responses/{ResponseId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back NavigationUrl="@StrategicTraitResponseNavigation"/>
+
+<div class="strategic-trait-response">
+    <MudTabs Elevation="0" PanelClass="bg-white" Class="gap-3">
+        <MudTabPanel Text="Responses" Icon="@Icons.Material.Filled.QuestionAnswer" BadgeColor="Color.Secondary">
+            <div class="mb-2">
+                <MudPaper Outlined="true" class="inner-bg">
+                    <div class="title mb-6">
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="text-dark mb-2">SWOT Analysis</MudText>
+                        <MudText Typo="Typo.body2" Class="text-normal">View out all of your strengths and weaknesses.</MudText>
+                    </div>
+                    <StrategicTraitResponsesDetails
+                        Title="Strengths"
+                        StrategicType="StrategicType.Strength"
+                        Description="@StrengthCounts"
+                        Icon="images/icons/strength.svg"
+                        Traits="StrategicTraitResponse.Strengths"
+                        Type="StrategicType.Strength"/>
+                    <StrategicTraitResponsesDetails
+                        Title="Weaknesses"
+                        StrategicType="StrategicType.Strength"
+                        Description="@WeaknessCounts"
+                        Icon="images/icons/weakness.svg"
+                        Traits="StrategicTraitResponse.Weaknesses"
+                        Type="StrategicType.Weakness"/>
+                </MudPaper>
+            </div>
+        </MudTabPanel>
+        <MudTabPanel Text="Analysis" Icon="@Icons.Material.Filled.Analytics" BadgeColor="Color.Secondary">
+            <StrategicTraitAnalysis StrategyTraitsResult="StrategyTraitsResult" />
+        </MudTabPanel>
+    </MudTabs>
+</div>

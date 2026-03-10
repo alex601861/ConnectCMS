@@ -1,0 +1,181 @@
+﻿@if (TrainingDetails is null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="inner-padding training">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange"/>
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="training-grid row">
+                @foreach (var training in TrainingDetails.Result)
+                {
+                    <div class="col-xxl-3 col-lg-4 col-md-6 col-12">
+                        <MudCard Class="training-card custom-card" Elevation="0">
+                            <MudImage Src="@training.ImageUrl" Width="207" Height="140" Class="img-fluid w-100 card__image"/>
+                            <MudCardContent Class="pa-0">
+                                <MudPaper Elevation="0" Class="d-flex justify-content-between align-items-center mb-2 bg-transparent">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="text-dark fw-bold">@training.Title</MudText>
+                                    <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomRight" AriaLabel="Training Menu">
+                                        @switch (training.Action)
+                                        {
+                                            case Constants.RequestAction.RejectedAction:
+                                                <MudMenuItem @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)">Details</MudMenuItem>
+                                                break;
+                                            case Constants.RequestAction.AcceptedAction:
+                                                <MudMenuItem @onclick="() => NavigateToAssignedTrainingDetails(training.Id)">Details</MudMenuItem>
+                                                break;
+                                            case Constants.RequestAction.AvailableAction:
+                                                <MudMenuItem @onclick="() => OpenSelfRequestModal(training.Id)">Request</MudMenuItem>
+                                                <MudMenuItem @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)">Details</MudMenuItem>
+                                                break;
+                                            case Constants.RequestAction.PendingAction:
+                                                <MudMenuItem @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)">Details</MudMenuItem>
+                                                <MudMenuItem @onclick="() => OpenCancelRequestModal(training.TrainingCandidateId ?? Guid.Empty)">Cancel</MudMenuItem>
+                                                break;
+                                        }
+                                    </MudMenu>
+                                </MudPaper>
+                                <div class="text-ellipsis">
+                                    @((MarkupString)training.Description)
+                                </div>
+                                <MudDivider Class="my-3"/>
+                                <AssignedTrainerDetails AssignedTrainers="@training.AssignedTrainers"/>
+                                <div class="date d-flex align-items-center gap-x-2 mb-3">
+                                    <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20"/>
+                                    <MudText Typo="Typo.subtitle2" Class="text-normal">@training.StartDate - @training.EndDate</MudText>
+                                </div>
+                                <div class="location d-flex align-items-center gap-x-2">
+                                    <MudImage Src="images/icons/location.svg" Alt="Blue Location Icon" Width="20" Height="20"/>
+                                    <MudText Typo="Typo.subtitle2" Class="text-normal">@training.LocationDetails</MudText>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <div class="table-responsive">
+                    <table class="table roles-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Classes</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var training in TrainingDetails.Result)
+                        {
+                            <tr>
+                                <td>@(TrainingDetails.Result.IndexOf(training) + 1).</td>
+                                <td>@training.Title</td>
+                                <td>@training.AssignedTrainers.ClassCount</td>
+                                <td>@training.LocationDetails</td>
+                                <td>@training.StartDate - @training.EndDate</td>
+                                <td>
+                                    <div class="action">
+                                        @switch (training.Action)
+                                        {
+                                            case Constants.RequestAction.RejectedAction:
+                                                <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                                    <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)"/>
+                                                </MudTooltip>
+                                                break;
+                                            case Constants.RequestAction.AcceptedAction:
+                                                <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                                    <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToAssignedTrainingDetails(training.Id)"/>
+                                                </MudTooltip>
+                                                break;
+                                            case Constants.RequestAction.AvailableAction:
+                                                <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                                    <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)"/>
+                                                </MudTooltip>
+                                                <MudTooltip Text="Request" Color="Color.Primary" Arrow="true">
+                                                    <MudImage Src="images/icons/document.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenSelfRequestModal(training.Id)"/>
+                                                </MudTooltip>
+                                                break;
+                                            case Constants.RequestAction.PendingAction:
+                                                <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                                    <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)"/>
+                                                </MudTooltip>
+                                                <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                                    <MudImage Src="images/icons/delete.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenCancelRequestModal(training.TrainingCandidateId ?? Guid.Empty)"/>
+                                                </MudTooltip>
+                                                break;
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <Pagination PageCount="TrainingDetails.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="TrainingDetails.TotalCount" />
+    </div>
+
+    if (SelfRequest)
+    {
+        <ModalLayout T="@SelfCandidateAssignmentDto"
+                     Module="Trainings"
+                     Title="Self Training Request and Assignment"
+                     Description="Please confirm your request action for the respective training's assignment."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OnSelfTrainingRequest"
+                     CancelLabel="Discard"
+                     SubmitLabel="Save">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@Animations.Regular.Sign"
+                          Trigger="loop"/>
+                <MudText Class="hfs4 data fw-600">Are you sure you want to request for the following training?</MudText>
+            </div>
+        </ModalLayout>
+    }
+
+    if (IsCancelRequestModalOpen)
+    {
+        <ModalLayout T="@SelfCandidateAssignmentDto"
+                     Module="Training"
+                     Title="Cancel Training Request"
+                     Description="Please proceed on with the following for your training request cancellation."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@OnCancelTrainingRequest"
+                     CancelLabel="Discard"
+                     SubmitLabel="Save">
+            <div class="text-center">
+                <LordIcon Height="200"
+                          Width="200"
+                          Icon="@Animations.Regular.Rules"
+                          Trigger="loop"/>
+                <MudText class="hfs4 data fw-600">Are you sure you want to cancel your training request? You have to send another approval request before being enrolled to the following training.</MudText>
+            </div>
+        </ModalLayout>
+    }
+}
