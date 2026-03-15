@@ -1,0 +1,21 @@
+::deep .mud-tabs-tabbar {
+    margin-bottom: 32px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+::deep .mud-tab {
+    color: #000;
+    text-transform: capitalize;
+    font-size: 16px;
+}
+
+::deep .mud-tab:hover,
+::deep .mud-tab-active {
+    color: #ffa500;
+    background-color: transparent;
+}
+
+::deep .mud-tab-slider {
+    background-color: #ffa500;
+}
+

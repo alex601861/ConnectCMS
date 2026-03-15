@@ -1,0 +1,55 @@
+﻿<div class="custom-table inner-padding">
+    <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+        <div class="filter-left d-flex align-items-center gap-x-2">
+            <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+            <Filter OnFilterApplication="OnRespondentsFilter">
+                <MudSelect T="int" @bind-Value="@Phase" Label="Phase" Dense="true" Variant="Variant.Outlined" Class="ml-2" T="int" AnchorOrigin="Origin.BottomCenter">
+                    @for (var i = 1; i <= TrainingInspection.Phases; i++)
+                    {
+                        var index = i;
+                        <MudSelectItem Value="@index">@index</MudSelectItem>
+                    }
+                </MudSelect>
+            </Filter>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table format-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Answered Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var candidate in Respondents)
+                {
+                    <tr>
+                        <td>@(Respondents.IndexOf(candidate) + 1).</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <Avatar Name="@candidate.Name" ImageUrl="@candidate.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" Height="44" Width="44" />
+                                @candidate.Name
+                            </div>
+                        </td>
+                        <td>@candidate.EmailAddress</td>
+                        <td>@candidate.PhoneNumber</td>
+                        <td>@candidate.AnsweredDate</td>
+                        <td>
+                            <div class="action">
+                                <MudTooltip Text="View Answers" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="images/icons/eye.svg" Alt="Edit Icon" Height="18" Width="18" @onclick="() => NavigateToAnswerDetails(candidate.UserResponseId)" />
+                                </MudTooltip>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

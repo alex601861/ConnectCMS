@@ -1,0 +1,143 @@
+﻿@if (CandidateDetail == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="candidate-detail inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+                @* <Filter OnFilterApplication="OnCandidateFilter"> *@
+                @*     <MudSelect T="int" @bind-Value="CandidateType" Label="Type" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter"> *@
+                @*         <MudSelectItem Value="@(Constants.CandidateType.All)">@Constants.CandidateType.AllAction</MudSelectItem> *@
+                @*         <MudSelectItem Value="@(Constants.CandidateType.Organizational)">@Constants.CandidateType.OrganizationalAction</MudSelectItem> *@
+                @*     </MudSelect> *@
+                @* </Filter> *@
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange"/>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenUnassignedCandidateOpenModal" StartIcon="@Icons.Material.Filled.Assignment">Assign Candidates</MudButton>
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="row gap-y-5 candidate-detail-grid">
+                @foreach (var candidate in CandidateDetail.Result)
+                {
+                    <div class="col-xxl-3 col-xl-4 col-md-6 col-12">
+                        <MudCard class="trainer-card custom-card pa-6 position-relative" Elevation="0">
+                            @if (ClientUserDetails.OrganizationId == candidate.Organization?.Id)
+                            {
+                                <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AriaLabel="Open user menu">
+                                    <MudMenuItem OnClick="() => NavigateToCandidateDetails(candidate.TrainingCandidateId)">Profile</MudMenuItem>
+                                </MudMenu>
+                            }
+                            <Avatar Name="@candidate.Name" ImageUrl="@candidate.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath"/>
+                            <MudCardContent class="pa-0 d-flex flex-column gap-y-4">
+                                <div class="trainer-info text-center">
+                                    <MudTooltip Text="@(candidate.Designation)" Color="Color.Primary" Arrow="true">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-1">@candidate.Name</MudText>
+                                    </MudTooltip>
+                                    <MudText Typo="Typo.body2" class="text-normal">@candidate.EmailAddress</MudText>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center flex-wrap gap-x-4 gap-y-4">
+                                    <div class="trainer-assigned-date text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Approved Date</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@candidate.ApprovedDate</MudText>
+                                    </div>
+                                    <div class="trainer-contact text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Contact Number</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@candidate.PhoneNumber</MudText>
+                                    </div>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <div class="table-responsive">
+                    <table class="table roles-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email Address</th>
+                            <th>Assigned Date</th>
+                            <th>Contact Number</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var candidateDetails in CandidateDetail.Result)
+                        {
+                            <tr>
+                                <td>@(CandidateDetail.Result.IndexOf(candidateDetails) + 1).</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <Avatar Name="@candidateDetails.Name" ImageUrl="@candidateDetails.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" Height="40" Width="40" />
+                                        @if (!string.IsNullOrEmpty(candidateDetails.Designation))
+                                        {
+                                            <MudTooltip Arrow="true" Text="@candidateDetails.Designation" Color="Color.Primary">
+                                                <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark mb-1">@candidateDetails.Name</MudText>
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark mb-1">@candidateDetails.Name</MudText>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@candidateDetails.EmailAddress</td>
+                                <td>@candidateDetails.ApprovedDate</td>
+                                <td>@candidateDetails.PhoneNumber</td>
+                                <td>
+                                    @if (ClientUserDetails.OrganizationId == candidateDetails.Organization?.Id)
+                                    {
+                                        <MudTooltip Text="View Profile" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToCandidateDetails(candidateDetails.TrainingCandidateId)"/>
+                                        </MudTooltip>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <Pagination PageCount="CandidateDetail.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="CandidateDetail.TotalCount" />
+    </div>
+
+    if (IsAdminRequestAssignmentModalOpen)
+    {
+        <ModalLayout T="@AssignCandidatesDto"
+                     Module="Training"
+                     Title="Candidate Assignment"
+                     Description="Please select the candidates to be allocated or assigned to the respective training, Note: These are the candidates that have not requested for this training, please be sure to check the Approval Matrix page as well if you have not found your desired candidate."
+                     SubmitColor="Color.Primary"
+                     Size="modal-xl"
+                     OnSave="@CloseClientRequestModal"
+                     IsDisabled="IsCandidateNotAssignedDisabled"
+                     SubmitLabel="Save"
+                     CancelLabel="Cancel">
+            <MudTreeView Hover ReadOnly="false" TriState="true" @bind-SelectedValues="SelectedCandidateIds" SelectionMode="SelectionMode.MultiSelection" CheckBoxColor="Color.Info" Class="tree-view-upload">
+                @foreach (var candidate in UnassignedCandidates)
+                {
+                    <MudTreeViewItem T="Guid" Text="@GetUserDisplayName(candidate)" Value="@candidate.Id"/>
+                }
+            </MudTreeView>
+        </ModalLayout>
+    }
+}

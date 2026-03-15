@@ -1,0 +1,36 @@
+﻿<div class="training-detail inner-bg">
+    <div class="row gap-y-5 training-detail-grid">
+        <div class="col-xxl-4 col-lg-5 col-12">
+            <MudImage Src="@TrainingDetail.ImageUrl" Alt="" Width="614" Height="384" Class="img-fluid w-100"/>
+        </div>
+        <div class="col-xxl-8 col-lg-7 col-12">
+        <div class="training-detail__desc mb-6">
+            <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="text-dark mt-4 mb-2 fw-bold">
+                @TrainingDetail.Title
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-normal">@((MarkupString)TrainingDetail.Description)</MudText>
+            </div>
+            <div class="training-detail__info">
+                <MudText Typo="Typo.subtitle2" HtmlTag="h3" class="fw-bold text-dark mb-8">More Details About Training</MudText>
+                <div class="d-flex flex-wrap gap-x-16 gap-y-2">
+                <ul class="training-detail__list d-flex flex-column gap-2">
+                    <li>
+                        <MudText Typo="Typo.h6" HtmlTag="p" Class="text-normal">Location - @TrainingDetail.LocationDetails</MudText>
+                    </li>
+                    <li>
+                        <MudText Typo="Typo.h6" HtmlTag="p" Class="text-normal">Training Format - @TrainingDetail.TrainingFormat</MudText>
+                    </li>
+                    </ul>
+                    <ul class="training-detail__list d-flex flex-column gap-2">
+                    <li>
+                        <MudText Typo="Typo.h6" HtmlTag="p" Class="text-normal">Start Date - @TrainingDetail.StartDate</MudText>
+                    </li>
+                    <li>
+                        <MudText Typo="Typo.h6" HtmlTag="p" Class="text-normal">End Date - @TrainingDetail.EndDate</MudText>
+                    </li>
+                </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

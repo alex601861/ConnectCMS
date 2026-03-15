@@ -1,0 +1,10 @@
+﻿@page "/resource/post/{ResourceId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back />
+
+<div class="resource-view">
+    <ResourcePostDetails Resource="Resource" />
+</div>

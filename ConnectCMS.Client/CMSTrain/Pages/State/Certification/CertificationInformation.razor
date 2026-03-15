@@ -1,0 +1,73 @@
+<div>
+    <div id="certificate-container">
+        <div class="certificate mb-4" style="overflow: hidden;">
+            <div class="certificate-header">
+                <div class="custom-container">
+                    <div class="logo-wrapper">
+                        @if (!string.IsNullOrEmpty(TrainingCertificationConfiguration.Certification.PrimaryLogo))
+                        {
+                            <MudImage Src="@TrainingCertificationConfiguration.Certification.PrimaryLogo" Height="180" Width="290"/>
+                        }
+                    </div>
+                    <h1>CERTIFICATION<br> <span>of Completion</span></h1>
+                </div>
+            </div>
+            <div class="certificate-details">
+                <div class="certificate-body">
+                    <div class="top-content">
+                        <div class="custom-container">
+                            <p class="pt-5 pb-0">This certificate is proudly presented to</p>
+                        </div>
+                    </div>
+                    <div class="bottom-content" style="background-color: @TrainingCertificationConfiguration.Certification.PrimaryColor;">
+                        <span class="trapezoid trapezoid-1" style="border-bottom: 35px solid @TrainingCertificationConfiguration.Certification.SecondaryColor; border-right: 15px solid transparent; border-left: 0 solid transparent;"></span>
+                        <span class="trapezoid trapezoid-2" style="border-bottom: 35px solid @TrainingCertificationConfiguration.Certification.SecondaryColor; border-left: 15px solid transparent; border-right: 0 solid transparent;"></span>
+                        <div class="custom-container">
+                            <h2 style="color: @TrainingCertificationConfiguration.Certification.TertiaryColor;">
+                                @Certification.CertificationDetails.Candidate
+                            </h2>
+                            <p>
+                                for active involvement and successful completion of<br>"@Certification.CertificationDetails.Training" Training conducted by CMS Connect Pvt. Ltd.
+                            </p>
+                            <p>
+                                @Certification.CertificationDetails.Date
+                            </p>
+                        </div>
+                        <span class="trapezoid trapezoid-3" style="border-top: 35px solid @TrainingCertificationConfiguration.Certification.SecondaryColor; border-left: 15px solid transparent; border-right: 15px solid transparent;"></span>
+                    </div>
+                </div>
+                <div class="certificate-footer">
+                    <div class="custom-container">
+                        @{
+                            var hasSecondaryLogo = !string.IsNullOrEmpty(TrainingCertificationConfiguration.Certification.SecondaryLogo);
+                            var hasSignature = !string.IsNullOrEmpty(TrainingCertificationConfiguration.Certification.Signature);
+                            var shouldCenterAlignLogo = !hasSecondaryLogo && !hasSignature;
+                        }
+                        <div class="certificate-footer__inner pb-5 @(shouldCenterAlignLogo ? "center-logo" : "")">
+                            <div class="logo-wrapper">
+                                <img src="https://api.connectcms.com.np/resources/cms.png" alt="CMS Connect Logo" width="265" height="150">
+                            </div>
+                            @if (hasSecondaryLogo)
+                            {
+                                <div class="logo-wrapper">
+                                    <MudImage Src="@TrainingCertificationConfiguration.Certification.SecondaryLogo" Width="140"/>
+                                </div>
+                            }
+                            @if (hasSignature)
+                            {
+                                <div class="facilitator">
+                                    <MudImage Src="@TrainingCertificationConfiguration.Certification.Signature"/>
+                                    <h3>Singh Bahadur Moktan</h3>
+                                    <h4>Facilitator</h4>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-center">
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="DownloadCertificate" Disabled="IsDisabled" EndIcon="@Icons.Material.Filled.Download">Download Certification</MudButton>
+    </div>
+</div>

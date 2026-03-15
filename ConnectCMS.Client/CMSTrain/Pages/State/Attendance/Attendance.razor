@@ -1,0 +1,233 @@
+﻿@if (AttendanceRequests == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="attendances inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <Filter OnFilterApplication="OnAttendanceFilter">
+                    <MudSelect T="bool?" @bind-Value="IsApproved" Label="Status" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@(null as bool?)">@Constants.StatusAction.AllAction</MudSelectItem>
+                        <MudSelectItem Value="@(true as bool?)">@Constants.RequestAction.AcceptedAction</MudSelectItem>
+                        <MudSelectItem Value="@(false as bool?)">@Constants.RequestAction.RejectedAction</MudSelectItem>
+                    </MudSelect>
+                </Filter>
+            </div>
+            <div class="filter-right">
+                @if (IsEditable)
+                {
+                    <MudButton Color="Color.Primary" Class="btn btn--md" DropShadow="false" Variant="Variant.Outlined" OnClick="OpenCloseAttendanceConfigurationModal" StartIcon="@Icons.Material.Filled.Attachment">Attendance Configuration</MudButton>
+                    <MudButton Color="Color.Primary" Class="btn btn--md" DropShadow="false" Variant="Variant.Filled" OnClick="OpenCloseAttendanceExportModal" StartIcon="@Icons.Material.Filled.ImportExport">Attendance Export</MudButton>
+                }
+            </div>
+        </div>
+
+        <div class="custom-table">
+            <div class="table-responsive">
+                <table class="table attendance-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Attendance</th>
+                            <th>Attendance Period</th>
+                            <th>Remarks</th>
+                            <th>Status</th>
+                            <th>Action By</th>
+                            <th>Action At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attendance in AttendanceRequests.Result)
+                        {
+                            <tr>
+                                <td>@(AttendanceRequests.Result.IndexOf(attendance) + 1).</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <Avatar Height="44"
+                                                Width="44"
+                                                Name="@attendance.CandidateDetails.Name"
+                                                ImageUrl="@attendance.CandidateDetails.ImageUrl"
+                                                FilePath="@Constants.FilePath.UsersImagesFilePath" />
+                                        @attendance.CandidateDetails.Name
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (attendance.Id is not null && attendance.Id != Guid.Empty)
+                                    {
+                                        <MudTooltip Text="Download Attendance" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/download.svg" Alt="Download Icon" Height="20" Width="20" Class="img-fluid" @onclick="() => DownloadAttendanceImage(attendance.Id ?? Guid.Empty)" />
+                                        </MudTooltip>
+                                    }
+                                </td>
+                                <td>@attendance.AttendedAt</td>
+                                <td>@attendance.Remarks</td>
+                                <td>
+                                    @switch (attendance)
+                                    {
+                                        case { IsActionCompleted: true, IsApproved: true }:
+                                            <MudButton Color="Color.Success" DropShadow="false" Variant="Variant.Outlined" Class="btn">Approved</MudButton>
+                                            break;
+                                        case { IsActionCompleted: true, IsApproved: false }:
+                                            <MudButton Color="Color.Error" DropShadow="false" Variant="Variant.Outlined" Class="btn">Rejected</MudButton>
+                                            break;
+                                        case { IsActionCompleted: false, IsApproved: false }:
+                                            <MudButton Color="Color.Secondary" DropShadow="false" Variant="Variant.Outlined" Class="btn">Pending</MudButton>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(attendance.ApprovedBy))
+                                    {
+                                        @($"{attendance.ApprovedBy} ({attendance.ApprovalRole})")
+                                    }
+                                </td>
+                                <td>@attendance.ActionDate</td>
+                                <td>
+                                    @if (attendance.Id is not null && attendance.Id != Guid.Empty)
+                                    {
+                                        if (attendance.IsActionCompleted == false)
+                                        {
+                                            <MudTooltip Text="Approve" Color="Color.Primary" Arrow="true">
+                                                <MudImage Src="images/icons/approve.svg" Alt="Tick Icon" Height="18" Width="18" @onclick="() => OpenApproveRejectModal(attendance.Id ?? Guid.Empty, true)" />
+                                            </MudTooltip>
+                                            <MudTooltip Text="Reject" Color="Color.Primary" Arrow="true">
+                                                <MudImage Src="images/icons/reject.svg" Alt="Cross Icon" Height="18" Width="18" @onclick="() => OpenApproveRejectModal(attendance.Id ?? Guid.Empty, false)" />
+                                            </MudTooltip>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <Pagination PageCount="AttendanceRequests.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="AttendanceRequests.TotalCount" />
+    </div>
+
+    if (IsAttendanceApprovalModalOpen)
+    {
+        <ModalLayout T="@AttendanceApproveRejectDto"
+                     Module="Attendance"
+                     Title="@(AttendanceApproveReject.IsApproved ? "Approve Request" : "Reject Request")"
+                     Description="Please provide your remarks on your action for the following attendance request."
+                     SubmitColor="@(AttendanceApproveReject.IsApproved ? Color.Success : Color.Error)"
+                     Size="modal-lg"
+                     OnSave="@ApproveRejectCandidate"
+                     CancelLabel="Discard"
+                     SubmitLabel="@(AttendanceApproveReject.IsApproved ? "Approve" : "Reject")">
+            <MudGrid class="mt-n4" Spacing=8>
+                <MudItem class="pt-4" xs=12 md=12 xl=12>
+                    <MudTextField @bind-Value="AttendanceApproveReject.Remarks"
+                                  Label="Remarks"
+                                  Variant="Variant.Outlined"
+                                  Lines="4"
+                                  Placeholder="Enter your remarks here ..." />
+                </MudItem>
+            </MudGrid>
+        </ModalLayout>
+    }
+
+    if (IsAttendanceConfigurationModalOpen)
+    {
+        <ModalLayout T="@CMSTrain.Client.Models.Requests.Configuration.Class.ClassAttendanceConfiguration"
+                     Module="Class"
+                     Title="Attendance Configuration"
+                     Description="Please fill in the following form to set the attendance configuration for the respective class"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UploadAttendanceConfigurations"
+                     SubmitLabel="Save"
+                     CancelLabel="Discard">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudDatePicker Label="Access Period"
+                                       Variant="Variant.Outlined"
+                                       DateFormat="dd.MM.yyyy"
+                                       Placeholder="Select an Access Period"
+                                       PickerVariant="PickerVariant.Dialog"
+                                       ReadOnly="true"
+                                       @bind-Date="ClassAttendanceConfiguration.Accessibility.Date" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTimePicker Label="Access Period"
+                                       PickerVariant="PickerVariant.Dialog"
+                                       AmPm="true"
+                                       @bind-Time="ClassAttendanceConfiguration.Accessibility.AccessPeriod"
+                                       Variant="Variant.Outlined"
+                                       Placeholder="Select the accessible time period" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTimePicker Label="Expire Period"
+                                       PickerVariant="PickerVariant.Dialog"
+                                       AmPm="true"
+                                       @bind-Time="ClassAttendanceConfiguration.Accessibility.ExpirePeriod"
+                                       Variant="Variant.Outlined"
+                                       Placeholder="Select the expiry time period" />
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudText Typo="Typo.subtitle1" Class="text-dark">Location Status</MudText>
+                        <MudRadioGroup T="bool" @bind-Value="@ClassAttendanceConfiguration.Accessibility.IsLocationEnabled">
+                            <MudRadio Value="true" Color="Color.Success">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Enable</MudText>
+                            </MudRadio>
+                            <MudRadio Value="false" Color="Color.Error">
+                                <MudText Typo="Typo.subtitle2" Class="text-dark">Disable</MudText>
+                            </MudRadio>
+                        </MudRadioGroup>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-12">
+                        <MudTextField Label="Availability Radius (in km)"
+                                      @bind-Value="ClassAttendanceConfiguration.Accessibility.Radius"
+                                      For="@(() => ClassAttendanceConfiguration.Accessibility.Radius)" 
+                                      Variant="Variant.Outlined"
+                                      Placeholder="Enter the availability radius (in km)"
+                                      Immediate="true"
+                                      InputType="@InputType.Number"
+                                      Disabled="@(!ClassAttendanceConfiguration.Accessibility.IsLocationEnabled)"/>
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+    
+    if (IsAttendanceExportModalOpen)
+    {
+        <ModalLayout T="@GetOrganizationDto"
+                     Module="Class"
+                     Title="Attendance Export"
+                     Description="Please select an organization to export the attendance record for the respective organizational candidates or select 'All' to download the complete report."
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@ExportAttendanceDetails"
+                     SubmitLabel="Export"
+                     CancelLabel="Discard">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudSelect T="Guid" @bind-Value="OrganizationId" Label="Organization" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            <MudSelectItem Value="@(Guid.Empty)">Complete Report</MudSelectItem>
+                            @foreach (var item in Organizations)
+                            {
+                                <MudSelectItem Value="@(item.Id)">@item.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+}
+

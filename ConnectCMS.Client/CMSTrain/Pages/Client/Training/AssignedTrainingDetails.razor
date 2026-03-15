@@ -1,0 +1,51 @@
+@page "/client/assigned-trainings/training-details/{TrainingId:guid}/{ActivePanelIndex:int?}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back />
+
+<MudTabs Elevation="0" PanelClass="bg-white" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+    <MudTabPanel Text="Training Details">
+        @if (ActivePanelIndex == 0)
+        {
+            <CMSTrain.Client.Pages.Client.Training.Details.TrainingDetails TrainingId="TrainingId" />
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="Class Details" BadgeData="@TrainingDetailsCountDto.ClassDetailsCount" BadgeColor="Color.Secondary">
+        @if (ActivePanelIndex == 1)
+        {
+            <CMSTrain.Client.Pages.Client.Training.Details.ClassDetails TrainingId="TrainingId" />
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="Resource Materials" BadgeData="@TrainingDetailsCountDto.ResourceDetailsCount" BadgeColor="Color.Secondary">
+        @if (ActivePanelIndex == 2)
+        {
+            <CMSTrain.Client.Pages.State.Resource.ResourceDetails ModuleId="TrainingId" IsEditable="false" IsAccessedByAdmin="false" IsMaterialForTraining="true" IsDeletable="false" />
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="Candidate Details" BadgeData="@TrainingDetailsCountDto.CandidateDetailsCount" BadgeColor="Color.Secondary">
+        @if (ActivePanelIndex == 3)
+        {
+            <CMSTrain.Client.Pages.Client.Training.Details.CandidateDetails TrainingId="TrainingId" />
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="Trainer Details" BadgeData="@TrainingDetailsCountDto.TrainerDetailsCount" BadgeColor="Color.Secondary">
+        @if (ActivePanelIndex == 4)
+        {
+            <CMSTrain.Client.Pages.State.Trainer.TrainerDetails ModuleId="TrainingId" IsTrainerForTraining="true" IsAssignable="false" />
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="Questionnaires" BadgeData="@TrainingDetailsCountDto.InspectionCount" BadgeColor="Color.Secondary">
+        @if (ActivePanelIndex == 5)
+        {
+            <CMSTrain.Client.Pages.Client.Training.Details.InspectionDetails TrainingId="TrainingId" />
+        }
+    </MudTabPanel>
+    @* <MudTabPanel Text="Certification Details" BadgeColor="Color.Secondary"> *@
+    @*     @if (ActivePanelIndex == 4) *@
+    @*     { *@
+    @*         <CMSTrain.Client.Pages.Client.Training.Details.CertificationDetails TrainingId="TrainingId" /> *@
+    @*     } *@
+    @* </MudTabPanel> *@
+</MudTabs>

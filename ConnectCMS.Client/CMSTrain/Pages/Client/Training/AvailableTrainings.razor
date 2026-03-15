@@ -1,0 +1,149 @@
+﻿@page "/client/available-trainings"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+@if (TrainingDetails is null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="inner-padding training">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange"/>
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="training-grid row">
+                @foreach (var training in TrainingDetails.Result)
+                {
+                    <div class="col-xxl-3 col-lg-4 col-md-6 col-12">
+                        <MudCard Class="training-card custom-card" Elevation="0">
+                            <MudImage Src="@training.ImageUrl" Width="207" Height="140" Alt="" Class="img-fluid w-100 card__image"/>
+                            <MudCardContent Class="pa-0">
+                                <MudPaper Elevation="0" Class="d-flex justify-content-between align-items-center mb-2 bg-transparent">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="text-dark fw-bold">@training.Title</MudText>
+                                    <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomLeft" AriaLabel="Available Trainings Menu">
+                                        @if (training.CandidateCount > 0)
+                                        {
+                                            <MudMenuItem @onclick="() => NavigateToAssignedTrainingDetails(training.Id)">Details</MudMenuItem>
+                                        }
+                                        else
+                                        {
+                                            <MudMenuItem @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)">Details</MudMenuItem>
+                                        }
+                                        <MudMenuItem @onclick="() => OpenClientRequestModal(training.Id)">Request</MudMenuItem>
+                                    </MudMenu>
+                                </MudPaper>
+                                <div class="text-ellipsis">
+                                    @((MarkupString)training.Description)
+                                </div>
+                                <MudDivider Class="my-3"/>
+                                <AssignedTrainerDetails AssignedTrainers="@training.AssignedTrainers"/>
+                                <div class="date d-flex align-items-center gap-x-2 mb-3">
+                                    <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20"/>
+                                    <MudText Typo="Typo.subtitle2" Class="text-normal">@training.StartDate - @training.EndDate</MudText>
+                                </div>
+                                <div class="location d-flex align-items-center gap-x-2">
+                                    <MudImage Src="images/icons/location.svg" Alt="Blue Location Icon" Width="20" Height="20"/>
+                                    <MudText Typo="Typo.subtitle2" Class="text-normal">@training.LocationDetails</MudText>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <div class="table-responsive">
+                    <table class="table roles-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Classes</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var training in TrainingDetails.Result)
+                        {
+                            <tr>
+                                <td>@(TrainingDetails.Result.IndexOf(training) + 1).</td>
+                                <td>@training.Title</td>
+                                <td>@training.AssignedTrainers.ClassCount</td>
+                                <td>@training.LocationDetails</td>
+                                <td>@training.StartDate - @training.EndDate</td>
+                                <td>
+                                    <div class="action">
+                                        <MudTooltip Text="View Details" Color="Color.Primary" Arrow="true">
+                                            @if (training.CandidateCount > 0)
+                                            {
+                                                <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToAssignedTrainingDetails(training.Id)"/>
+                                            }
+                                            else
+                                            {
+                                                <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToUnassignedTrainingDetails(training.Id)"/>
+                                            }
+                                        </MudTooltip>
+                                        <MudTooltip Text="Assign" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/document.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenClientRequestModal(training.Id)"/>
+                                        </MudTooltip>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <Pagination PageCount="TrainingDetails.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="TrainingDetails.TotalCount" />
+    </div>
+
+
+    if (ClientRequest)
+    {
+        <ModalLayout T="@ClientCandidateAssignmentDto"
+                     Module="Trainings"
+                     Title="Nominations"
+                     Description="Please select the candidates you want to nominate for the respective training"
+                     SubmitColor="Color.Primary"
+                     Size="modal-xl"
+                     OnSave="@CloseClientRequestModal"
+                     IsDisabled="IsCandidateNotAssignedDisabled"
+                     SubmitLabel="Yes"
+                     CancelLabel="No">
+            <MudTabs Elevation="0" PanelClass="bg-white" Class="gap-y-5">
+                <MudTabPanel Text="Available" BadgeData="@ClientOrganizationCount.AvailableCount" BadgeColor="Color.Secondary" OnClick="() => GetUsersForClientOrganization(ClientCandidateAssignment.TrainingId, Constants.RequestAction.Available)">
+                    <MudTreeView Hover ReadOnly="false" TriState="true" @bind-SelectedValues="SelectedClientNominations" SelectionMode="SelectionMode.MultiSelection" CheckBoxColor="Color.Info" Class="tree-view-upload">
+                        @foreach (var clientUser in ClientUsers)
+                        {
+                            <MudTreeViewItem T="Guid" Text="@GetUserDisplayName(clientUser)" Value="@clientUser.Id"/>
+                        }
+                    </MudTreeView>
+                </MudTabPanel>
+                <MudTabPanel Text="Accepted" BadgeData="@ClientOrganizationCount.AcceptedCount" BadgeColor="Color.Secondary" OnClick="() => GetUsersForClientOrganization(ClientCandidateAssignment.TrainingId, Constants.RequestAction.Accepted)">
+                    <AssignedTrainingCandidates ClientOrganizationUsers="ClientUsers"/>
+                </MudTabPanel>
+            </MudTabs>
+        </ModalLayout>
+    }
+}

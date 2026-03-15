@@ -1,0 +1,143 @@
+﻿@if (Classes == null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="class-details inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+                <Filter OnFilterApplication="OnClassDetailsFilter">
+                    <MudSelect T="int?" @bind-Value="Status" Label="Status" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@(Constants.Schedule.All)">@Constants.Schedule.AllAction</MudSelectItem>
+                        <MudSelectItem Value="@(Constants.Schedule.Scheduled as int?)">@Constants.Schedule.ScheduledAction</MudSelectItem>
+                        <MudSelectItem Value="@(Constants.Schedule.InProgress as int?)">@Constants.Schedule.InProgressAction</MudSelectItem>
+                        <MudSelectItem Value="@(Constants.Schedule.Completed as int?)">@Constants.Schedule.CompletedAction</MudSelectItem>
+                    </MudSelect>
+                </Filter>
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange"/>
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="class-details-grid row">
+                @foreach (var item in Classes.Result)
+                {
+                    <div class="col-xxl-3 col-lg-4 col-md-6 col-12">
+                        <MudCard Class="class-details-card custom-card" Elevation="0">
+                            @if (string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <MudImage Src="images/dummy-img.png" Width="207" Height="140" Alt="" Class="img-fluid w-100"/>
+                            }
+                            else
+                            {
+                                <MudImage Src="@item.ImageUrl" Width="207" Height="140" Alt="" Class="img-fluid w-100"/>
+                            }
+                            <MudCardContent Class="pa-0">
+                                <MudPaper Elevation="0" Class="d-flex align-items-center justify-content-between mb-4 bg-transparent">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="fw-bold">@item.Title</MudText>
+                                </MudPaper>
+                                <div>
+                                    <div class="date d-flex align-items-center gap-x-2 mb-2">
+                                        <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20"/>
+                                        <MudText Typo="Typo.subtitle2" Class="text-normal">@item.Date</MudText>
+                                    </div>
+                                    <div class="time d-flex align-items-center gap-x-2">
+                                        <MudImage Src="images/icons/clock.svg" Alt="Blue Clock Icon" Width="20" Height="20"/>
+                                        <MudText Typo="Typo.subtitle2" Class="text-normal">@item.StartTime - @item.EndTime</MudText>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-2">
+                                    @switch (item.Status)
+                                    {
+                                        case Constants.Schedule.ScheduledAction:
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="btn custom-btn" DropShadow="false">
+                                                @item.Status
+                                            </MudButton>
+                                            break;
+                                        case Constants.Schedule.CompletedAction:
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Success" Class="btn custom-btn" DropShadow="false">
+                                                @item.Status
+                                            </MudButton>
+                                            break;
+                                        case Constants.Schedule.InProgressAction:
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Info" Class="btn custom-btn" DropShadow="false">
+                                                @item.Status
+                                            </MudButton>
+                                            break;
+                                    }
+                                </div>
+                                <MudDivider Style="border-color: #D9D9D9" class="mt-2"/>
+                                @* <div> *@
+                                @*     <MudButton Variant="Variant.Outlined" Color="Color.Success" Class="btn fs8 w-100 mt-2" DropShadow="false"> *@
+                                @*         Assigned Trainers: @item.AssignedTrainers *@
+                                @*     </MudButton> *@
+                                @* </div> *@
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <div class="table-responsive">
+                    <table class="table roles-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Class Time</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var classes in Classes.Result)
+                        {
+                            <tr>
+                                <td>@(Classes.Result.IndexOf(classes) + 1).</td>
+                                <td>@classes.Title</td>
+                                <td>@classes.Date</td>
+                                <td>@classes.StartTime - @classes.EndTime</td>
+                                <td>
+                                    @switch (classes.Status)
+                                    {
+                                        case Constants.Schedule.ScheduledAction:
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="btn custom-btn" DropShadow="false">
+                                                @classes.Status
+                                            </MudButton>
+                                            break;
+                                        case Constants.Schedule.CompletedAction:
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Success" Class="btn custom-btn" DropShadow="false">
+                                                @classes.Status
+                                            </MudButton>
+                                            break;
+                                        case Constants.Schedule.InProgressAction:
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Info" Class="btn custom-btn" DropShadow="false">
+                                                @classes.Status
+                                            </MudButton>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <Pagination PageCount="Classes.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Classes.TotalCount" />
+    </div>
+}

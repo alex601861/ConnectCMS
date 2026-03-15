@@ -1,0 +1,89 @@
+﻿@if (ClassDetails == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="table-responsive">
+            <table class="table attendance-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Time Period</th>
+                        <th>Attendance Status</th>
+                        <th>Approval Status</th>
+                        <th>Attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var classDetail in ClassDetails.Result)
+                    {
+                        <tr>
+                            <td>@(ClassDetails.Result.IndexOf(classDetail) + 1).</td>
+                            <td>@classDetail.Title</td>
+                            <td>@classDetail.Date</td>
+                            <td>@classDetail.StartTime - @classDetail.EndTime</td>
+                            <td>
+                                @if (classDetail.AttendanceMarkedStatus == Constants.RequestAction.MarkedAction)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Info">
+                                        Marked
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Warning">
+                                        Not Marked
+                                    </MudChip>
+                                }
+                            </td>
+                            <td>
+                                @switch (classDetail.AttendanceApprovedStatus)
+                                {
+                                    case Constants.RequestAction.AcceptedAction:
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Success">
+                                            Accepted
+                                        </MudChip>
+                                        break;
+                                    case Constants.RequestAction.RejectedAction:
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Error">
+                                            Rejected
+                                        </MudChip>
+                                        break;
+                                    case Constants.RequestAction.PendingAction:
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Primary">
+                                            Pending
+                                        </MudChip>
+                                        break;
+                                    default:
+                                        <MudChip T="string" Variant="Variant.Filled" Class="status" Color="Color.Warning">
+                                            Not Marked
+                                        </MudChip>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                @if (classDetail.AttendanceId != null && classDetail.AttendanceId != Guid.Empty)
+                                {
+                                    <MudTooltip Text="Download Attendance" Color="Color.Primary" Arrow="true">
+                                        <MudImage Src="images/icons/download.svg" Alt="Download Icon" Height="18" Width="18" @onclick="() => DownloadAttendanceImage(classDetail.AttendanceId ?? Guid.Empty)" />
+                                    </MudTooltip>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <Pagination PageCount="ClassDetails.TotalPages"
+                SelectedPageSize="@PageSize"
+                SelectedPageSizeChanged="UpdatePageSize"
+                SelectedPageNumber="@PageNumber"
+                SelectedPageNumberChanged="UpdatePageNumber"
+                TotalRecords="ClassDetails.TotalCount" />
+}

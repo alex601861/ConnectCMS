@@ -1,0 +1,12 @@
+﻿<div class="resource-view-grid row gap-y-3 inner-padding">
+    <div class="row">
+        <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="fw-bold text-dark mb-2">@Resource.Title</MudText>
+        @if (Resource.Tag != null)
+        {
+            <MudText Typo="Typo.body1" Class="text-normal mb-4">@((MarkupString)Resource.Tag)</MudText>
+        }
+    </div>
+    <div class="d-flex flex-column">
+        @((MarkupString)Resource.Description)
+    </div>
+</div>

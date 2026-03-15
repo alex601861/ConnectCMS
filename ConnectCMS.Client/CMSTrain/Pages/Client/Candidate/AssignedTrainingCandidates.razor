@@ -1,0 +1,36 @@
+﻿<div class="custom-table">
+    <div class="table-responsive">
+        <table class="table user-table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Phone Number</th>
+                <th>Requested Date</th>
+                <th>Action Date</th>
+                <th>Remarks</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var candidate in ClientOrganizationUsers)
+            {
+                <tr>
+                    <td>@(ClientOrganizationUsers.IndexOf(candidate) + 1).</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <Avatar Name="@candidate.Name" ImageUrl="@candidate.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" Height="40" Width="40" />
+                            @candidate.Name
+                        </div>
+                    </td>
+                    <td>@candidate.EmailAddress</td>
+                    <td>@candidate.PhoneNumber</td>
+                    <td>@candidate.RequestedDate</td>
+                    <td>@candidate.ActionDate</td>
+                    <td>@candidate.Remarks</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

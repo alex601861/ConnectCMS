@@ -1,0 +1,42 @@
+﻿<div class="class-details-card custom-card">
+    <div class="d-flex align-items-center flex-wrap flex-sm-nowrap gap-y-5 gap-x-6">
+        <div style="width: 207px">
+            <MudImage Src="@ClassInformation.ImageUrl" Height="140" Width="207" Class="img-fluid w-100 card__image" />
+        </div>
+        <div class="w-auto">
+            <MudCardContent Class="pa-0 d-flex flex-column gap-3">
+                <MudText Typo="Typo.h6" HtmlTag="h2" Class="fw-bold">@ClassInformation.Title</MudText>
+                <MudPaper Elevation="0" Class="bg-transparent">
+                    <div class="date d-flex align-items-center gap-x-2 mb-2">
+                        <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20" />
+                        <MudText Typo="Typo.subtitle2" Class="text-normal">@ClassInformation.Date</MudText>
+                    </div>
+                    <div class="time d-flex align-items-center gap-x-2">
+                        <MudImage Src="images/icons/clock.svg" Alt="Blue Clock Icon" Width="20" Height="20" />
+                        <MudText Typo="Typo.subtitle2" Class="text-normal">@ClassInformation.StartTime - @ClassInformation.EndTime</MudText>
+                    </div>
+                </MudPaper>
+                <MudPaper Elevation="0" Class="bg-transparent">
+                    @switch (ClassInformation.Status)
+                    {
+                        case Constants.Schedule.ScheduledAction:
+                            <MudButton Variant="Variant.Outlined" DropShadow="false" Color="Color.Secondary" Class="btn status-button">
+                                Scheduled
+                            </MudButton>
+                            break;
+                        case Constants.Schedule.CompletedAction:
+                            <MudButton Variant="Variant.Outlined" DropShadow="false" Color="Color.Success" Class="btn status-button">
+                                Completed
+                            </MudButton>
+                            break;
+                        case Constants.Schedule.InProgressAction:
+                            <MudButton Variant="Variant.Outlined" DropShadow="false" Color="Color.Info" Class="btn status-button">
+                                In Progress
+                            </MudButton>
+                            break;
+                    }
+                </MudPaper>
+            </MudCardContent>
+        </div>
+    </div>
+</div>

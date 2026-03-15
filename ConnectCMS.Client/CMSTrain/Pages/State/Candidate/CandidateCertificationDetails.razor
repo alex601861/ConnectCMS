@@ -1,0 +1,37 @@
+﻿@if (Certification == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="inner-padding">
+        @if (Certification.Id == Guid.Empty)
+        {
+            <div class="text-center">
+                <Message Icon="@Animations.Regular.Folder" Title="Empty Repository" Description="The respective candidate has not been provided with any of the certifications yet, please verify all of your attendances and submit all sets of questionnaires module." />
+            </div>
+        }
+        else
+        {
+            <div class="text-center">
+                <Message Icon="@Animations.Regular.Rating" Title="Certification Issues" Description="The respective candidate has issued a certification, please click on the following button to view the respective certificate details." />
+                <MudButton DropShadow="false" Color="Color.Primary" Variant="Variant.Filled" Class="btn btn--sm" OnClick="OpenCloseCertificationDetailsModal">View Certification</MudButton>
+            </div>
+
+            if (IsCertificationDetailsModalOpen)
+            {
+                <ModalLayout T="@QuestionnaireQrCodeDto"
+                             Module="Certifications"
+                             Title="Certificate Details"
+                             Description="The following is the certificate issued by the respective organization for his / her participation in the training."
+                             SubmitColor="Color.Primary"
+                             Size="modal-xl"
+                             Style="max-width: 1540px;"
+                             OnSave="@OpenCloseCertificationDetailsModal"
+                             CancelLabel="Discard">
+                    <CertificationInformation Certification="Certification" />
+                </ModalLayout>
+            }
+        }
+    </div>
+}

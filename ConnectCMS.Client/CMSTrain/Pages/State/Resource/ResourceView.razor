@@ -1,0 +1,48 @@
+﻿@page "/resource/view/{ResourceId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back />
+
+@if (IsLoading)
+{
+    <Loader />
+}
+else
+{
+    <div class="resource-view-module">
+        <div class="resource-view">
+            @if (ResourceType == FileType.Post.ToString())
+            {
+                <ResourcePostDetails Resource="Resource" />
+            }
+            else
+            {
+                <div class="resource-view-grid row gap-y-3 inner-padding">
+                    <div class="row">
+                        <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="fw-bold text-dark mb-2">@Resource.Title</MudText>
+                        @if (Resource.Tag != null)
+                        {
+                            <MudText Typo="Typo.body1" Class="text-normal mb-4">
+                                @((MarkupString)Resource.Description)
+                            </MudText>
+                        }
+                        @if (string.IsNullOrEmpty(ResourceImage))
+                        {
+                            <div class="d-flex gap-x-3">
+                                <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+                                <MudText Typo="Typo.body1" Class="text-normal mb-4">
+                                    Please stand by, loading content details.
+                                </MudText>
+                            </div>
+                        }
+                        <div class="col-xxl-12 col-lg-12 col-12">
+                            <MudImage Src="@ResourceImage" Alt="Resource Material" Class="border-solid border-2 mud-border-dark img-fluid w-100 pa-4" Elevation="0" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

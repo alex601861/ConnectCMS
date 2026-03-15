@@ -1,0 +1,95 @@
+﻿@if (Subordinates is null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                <Filter />
+            </div>
+            <div class="filter-right">
+                @if ((TrainingCandidateAssignment.IsAdminRegistered && Role.Name == Constants.Roles.SuperAdmin) || 
+                     (TrainingCandidateAssignment.IsAdminRegistered && Role.Name == Constants.Roles.Admin) || 
+                     (TrainingCandidateAssignment.IsClientRequestRegistered && Role.Name == Constants.Roles.Client) || 
+                     (TrainingCandidateAssignment.IsSelfRegistered && Role.Name == Constants.Roles.Candidate) || 
+                     (TrainingCandidateAssignment.OrganizationId == ClientUserDetails.OrganizationId && Role.Name == Constants.Roles.Client) || 
+                     Role.Name == Constants.Roles.SuperAdmin || Role.Name == Constants.Roles.Admin)
+                {
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="btn btn--md" OnClick="OpenCreateSubordinateModal" StartIcon="@Icons.Material.Filled.Add" Disabled="IsCreateModalOpen">Add Subordinates</MudButton>
+                }
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table format-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Email</th>
+                    <th>Contact Number</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Subordinates.Result)
+                {
+                    <tr>
+                        <td>@(Subordinates.Result.IndexOf(item) + 1).</td>
+                        <td>@item.Name</td>
+                        <td>@item.Type</td>
+                        <td>@item.Email</td>
+                        <td>@item.ContactNumber</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Subordinates.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Subordinates.TotalCount" />
+    </div>
+
+    if (IsCreateModalOpen)
+    {
+        <ModalLayout T="@CreateClientSubordinateDto"
+                     Module="Training"
+                     Title="Add Subordinate"
+                     Description="Please fill in the the following form to add details of your subordinate"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@InsertSubordinate"
+                     CancelLabel="Discard"
+                     SubmitLabel="Submit"
+                     IsDisabled="IsCreateButtonDisabled">
+            <div class="d-flex flex-column gap-4">
+                <div class="row gap-y-5">
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudTextField @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.Name" Label="Name" For="@(() => CreateCandidateSubordinateDto.SubordinateDetails.Name)" Variant="Variant.Outlined" Placeholder="Enter the Subordinate Name " Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudTextField @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.Email" Label="Email" Variant="Variant.Outlined" Placeholder="Enter the Subordinate Email" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudTextField @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.ContactNumber" Label="Contact Number" Variant="Variant.Outlined" Placeholder="Enter the Contact Number" Immediate="true"/>
+                    </div>
+                    <div class="col-xl-6 col-md-6 col-6">
+                        <MudSelect @bind-Value="CreateCandidateSubordinateDto.SubordinateDetails.Type" Label="Subordinate" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                            @foreach (SubordinateType type in Enum.GetValues(typeof(SubordinateType)))
+                            {
+                                <MudSelectItem Value="@(type)">@type.ToString()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
+            </div>
+        </ModalLayout>
+    }
+}

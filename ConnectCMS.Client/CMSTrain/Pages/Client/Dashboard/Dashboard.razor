@@ -1,0 +1,261 @@
+﻿@page "/home/client-dashboard"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="dashboard candidate-dashboard">
+    <div class="dashboard-header d-flex align-items-center justify-content-between flex-wrap mb-6">
+        <div class="dashboard-header-text col-10">
+            <MudText Typo="Typo.h6" Class="fw-bold text-dark">
+                Namaste @UserDetail.Name 🙏 -
+                <MudText Typo="Typo.subtitle2" HtmlTag="span" Class="text-normal">here’s what’s happening with your dashboard</MudText>
+            </MudText>
+        </div>
+        <div class="col-2">
+            <TimePeriodFilter Value="TimePeriod" ValueChanged="OnStatusFilter" />
+        </div>
+    </div>
+
+    <div class="dashboard__grid">
+        <div class="dashboard__grid-left">
+            <div class="data-card-wrapper mb-6">
+                <div class="grid row gap-y-4">
+                    <div class="item col-xxl-4 col-lg-4 col-md-6 col-12">
+                        <div class="card">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Total Attended Classes
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <MudText Typo="Typo.h2" Class="card-data">
+                                    @(GetTrainingProgress.AttendedClasses)
+                                </MudText>
+                                <MudText Typo="Typo.body1" Color="Color.Success" Class="rate d-flex align-items-center gap-3">
+                                    <MudImage Src="images/icons/graph-up.svg" Height="24" Width="24" Alt="Graph Arrow Up" />
+                                    @(GetTrainingProgress.AttendedClassesGrowth) %
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item col-xxl-4 col-lg-4 col-md-6 col-12">
+                        <div class="card">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Trainings Completed
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <MudText Typo="Typo.h2" Class="card-data">
+                                    @(GetTrainingProgress.TrainingsCompleted)
+                                </MudText>
+                                <MudText Typo="Typo.body1" Color="Color.Error" Class="rate d-flex align-items-center gap-3">
+                                    <MudImage Src="images/icons/graph-down.svg" Height="24" Width="24" Alt="Graph Arrow Down" />
+                                    @(GetTrainingProgress.TrainingsCompletedGrowth) %
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item col-xxl-4 col-lg-4 col-md-6 col-12">
+                        <div class="card">
+                            <MudText Typo="Typo.subtitle1" Class="mb-4 card-title text-normal">
+                                Trainings In Progress
+                            </MudText>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <MudText Typo="Typo.h2" Class="card-data">
+                                    @(GetTrainingProgress.TrainingsInProgress)
+                                </MudText>
+                                <MudText Typo="Typo.body1" Color="Color.Error" Class="rate d-flex align-items-center gap-3">
+                                    <MudImage Src="images/icons/graph-down.svg" Height="24" Width="24" Alt="Graph Arrow Down" />
+                                    @(GetTrainingProgress.TrainingsInProgressGrowth) %
+                                </MudText>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box available-training mb-6">
+                <div class="mb-4 available-training__head">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="fw-bold text-dark">Available Trainings</MudText>
+                    <MudText Typo="Typo.body1" Class="hfs6 fw-600 subtitle">View all the newly available trainings to you want to request and subscribe for your nominations.</MudText>
+                </div>
+                <div class="row gap-y-5 available-training-grid">
+                    @foreach (var training in NewTrainings)
+                    {
+                        <div class="col-xxl-4 col-lg-6 col-sm-6 col-12">
+                            <MudCard Class="available-training-card custom-card pa-4 h-100 d-flex flex-column gap-y-3" Elevation="0">
+                                @if (string.IsNullOrEmpty(training.ImageUrl))
+                                {
+                                    <MudImage Src="images/dummy-img.png" Height="208" Width="330" Class="img-fluid w-100 card__image" />
+                                }
+                                else
+                                {
+                                    <MudImage Src="@training.ImageUrl" Height="208" Width="330" Class="img-fluid w-100 card__image" />
+                                }
+                                <MudCardContent Class="pa-0 d-flex flex-column gap-2">
+                                    <MudPaper Elevation="0" Class="d-flex justify-content-between align-items-center mb-2 bg-transparent">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="text-dark fw-bold">@training.Name</MudText>
+                                    </MudPaper>
+                                    <div style="height: 40px; overflow: hidden;">
+                                        <MudText Typo="Typo.body2" Class="text-normal">
+                                            @((MarkupString)training.Description)
+                                        </MudText>
+                                    </div>
+                                </MudCardContent>
+                                <MudDivider />
+                                <MudCardActions Class="justify-content-between gap-x-3 pa-0 flex-wrap">
+                                    <MudAvatarGroup Max="3" Class="avatar d-flex align-items-center">
+                                        @foreach (var trainer in training.Trainers)
+                                        {
+                                            <div class="@(training.Trainers.IndexOf(trainer) == 0 ? "" : "ms-n3")" style="z-index: 1">
+                                                <MudTooltip Text="@trainer.Name" Color="Color.Primary" Arrow="true">
+                                                    <Avatar Height="44"
+                                                            Width="44"
+                                                            Name="@trainer.Name"
+                                                            FilePath="@Constants.FilePath.UsersImagesFilePath"
+                                                            ImageUrl="@trainer.ImageUrl" />
+                                                </MudTooltip>
+                                            </div>
+                                        }
+                                    </MudAvatarGroup>
+                                    <div>
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Color="Color.Primary" Class="course-name mb-2 text-end">@training.NextClassDate</MudText>
+                                        <MudText Typo="Typo.body2" Class="text-normal text-end">Next Class Date</MudText>
+                                    </div>
+                                </MudCardActions>
+                            </MudCard>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="training-list custom-table box">
+                <div class="custom-table__header d-flex align-items-center justify-content-between mb-5 flex-wrap gap-y-3">
+                    <div>
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="fw-bold text-dark">Subscribed Trainings</MudText>
+                        <MudText Typo="Typo.body1" Class="hfs6 fw-600 subtitle">View all the assigned trainings at the moment for your nominations.</MudText>    
+                    </div>
+                    @* <div class="d-flex align-items-center gap-x-2 filter"> *@
+                    @*     <MudTextField @bind-Value="Search" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/> *@
+                    @*     <MudImage Src="images/icons/sort.svg" Alt="Sort Icon" Width="46" Height="46" Class="img-fluid w-auto"/> *@
+                    @*     <MudImage Src="images/icons/circular-filter.svg" Alt="Filter Icon" Width="46" Height="46" Class="img-fluid w-auto"/> *@
+                    @* </div> *@
+                </div>
+                <div class="table-responsive">
+                    <table class="table training-list-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Training</th>
+                                <th>Next Class Date</th>
+                                <th>Assigned Trainers</th>
+                                <th>Subscribed Candidates</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in AssignedTraining)
+                            {
+                                <tr>
+                                    <td>@(AssignedTraining.IndexOf(item) + 1).</td>
+                                    <td>@item.Name</td>
+                                    @if (string.IsNullOrEmpty(item.NextClassTime))
+                                    {
+                                        <td>
+                                            @item.NextClassDate
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            @item.NextClassDate (@item.NextClassTime)
+                                        </td>
+                                    }
+                                    <td>
+                                        <MudAvatarGroup Max="3" Class="avatar d-flex align-items-center">
+                                            @foreach (var trainer in item.Trainers)
+                                            {
+                                                <div class="@(item.Trainers.IndexOf(trainer) == 0 ? "" : "ms-n3")" style="z-index: 1">
+                                                    <MudTooltip Text="@trainer.Name" Color="Color.Primary" Arrow="true">
+                                                        <Avatar Height="33"
+                                                                Width="33"
+                                                                Name="@trainer.Name"
+                                                                FilePath="@Constants.FilePath.UsersImagesFilePath"
+                                                                ImageUrl="@trainer.ImageUrl" />
+                                                    </MudTooltip>
+                                                </div>
+                                            }
+                                        </MudAvatarGroup>
+                                    </td>
+                                    <td>
+                                        <MudAvatarGroup Class="avatar d-flex align-items-center">
+                                            @foreach (var candidate in item.Candidates)
+                                            {
+                                                <div class="@(item.Candidates.IndexOf(candidate) == 0 ? "" : "ms-n3")" style="z-index: 1">
+                                                    <MudTooltip Text="@candidate.Name" Color="Color.Primary" Arrow="true">
+                                                        <Avatar Height="33"
+                                                                Width="33"
+                                                                Name="@candidate.Name"
+                                                                FilePath="@Constants.FilePath.UsersImagesFilePath"
+                                                                ImageUrl="@candidate.ImageUrl" />
+                                                    </MudTooltip>
+                                                </div>
+                                            }
+                                        </MudAvatarGroup>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard__grid-right box">
+            <div class="row gap-y-8">
+                <div class="col-lg-12 col-md-6 col-12">
+                    <div class="calendar">
+                        <MudDatePicker Label="Select Date"
+                                       PickerVariant="PickerVariant.Static"
+                                       @bind-Date="DateRequest"
+                                       @bind-Date:after="OnDateChanged"
+                                       DateFormat="dd.MM.yyyy"
+                                       AdditionalDateClassesFunc="CheckDate"
+                                       Style="width: 100%;" />
+                    </div>
+                </div>
+                <div class=" col-lg-12 col-md-6 col-12">
+                    <div class="class-list pt-4" Style="border-top: 1px solid #D0C2C2">
+                        @if (ClassesForDate.Any())
+                        {
+                            <MudGrid Spacing="4" Class="popular-courses__grid">
+                                @foreach (var classModel in ClassesForDate)
+                                {
+                                    <MudItem xs="12" Class="popular-courses__grid-item" @onclick="() => NavigateToClassDetails(classModel.ClassId)" Style="cursor:pointer">
+                                        <MudCard Elevation="0" Class="course-card">
+                                            <MudCardContent>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="card-image">
+                                                        <MudImage Src="@classModel.ClassImage" alt="Dummy Image" Height="112" Width="112" Class="img-fluid" />
+                                                    </div>
+                                                    <div class="card-text">
+                                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark course-name mb-1 fw-bolder">@classModel.Title</MudText>
+                                                        <MudText Typo="Typo.body2" Class="text-normal fw-bold">@classModel.TrainingName</MudText>
+                                                        <MudText Typo="Typo.body2" Class="text-normal date fs-12 mb-1">@classModel.ClassDate (@classModel.ClassDay)</MudText>
+                                                        <MudText Typo="Typo.body2" Class="text-normal">@classModel.StartTime - @classModel.EndTime</MudText>
+                                                    </div>
+                                                </div>
+                                            </MudCardContent>
+                                        </MudCard>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        }
+                        else
+                        {
+                            <div class="text-center">
+                                <MudText Typo="Typo.body2" class="fs12 desc">No classes allocated for the selected date.</MudText>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

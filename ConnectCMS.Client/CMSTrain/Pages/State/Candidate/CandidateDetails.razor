@@ -1,0 +1,213 @@
+﻿@page "/trainings/candidate/{TrainingCandidateId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<Back NavigationUrl="@TrainingNavigation"/>
+
+<div class="row gap-y-5">
+    <div class="col-xxl-3 col-lg-4 col-12">
+        <div class="border-1 rounded">
+            <MudCard class="trainer-card custom-card bg-white pa-6 position-relative" Elevation="0">
+                <div class="triple-dot-menu">
+                    <MudTooltip Text="View Training Details" Color="Color.Primary" Arrow="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" @onclick="OpenTrainingDetailsModal" />
+                    </MudTooltip>
+                </div>
+                <Avatar Name="@CandidateDetail.Name" ImageUrl="@CandidateDetail.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" />
+                <MudCardContent class="pa-0 d-flex flex-column gap-y-4">
+                    <div class="candidate-info text-center">
+                        @if (!string.IsNullOrEmpty(CandidateDetail.Designation))
+                        {
+                            <MudTooltip Arrow="true" Text="@CandidateDetail.Designation" Color="Color.Primary">
+                                <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-1">@CandidateDetail.Name</MudText>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-1">@CandidateDetail.Name</MudText>
+                        }
+                        <MudText Typo="Typo.body2" class="text-normal">@CandidateDetail.EmailAddress</MudText>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
+                        <div class="candidate-approved-date text-center">
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Requested Date</MudText>
+                            <MudText Typo="Typo.body2" class="text-normal">@TrainingCandidateAssignment.RequestedDate</MudText>
+                        </div>
+                        <div class="candidate-approved-date text-center">
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Assigned Date</MudText>
+                            <MudText Typo="Typo.body2" class="text-normal">@TrainingCandidateAssignment.ActionDate</MudText>
+                        </div>
+                        <div class="candidate-contact text-center">
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Contact Number</MudText>
+                            <MudText Typo="Typo.body2" class="text-normal">@CandidateDetail.PhoneNumber</MudText>
+                        </div>
+                        <div class="candidate-type text-center">
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Request Type</MudText>
+                            @if (TrainingCandidateAssignment.IsSelfRegistered)
+                            {
+                                <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                    <span>Self Requested</span>
+                                </MudChip>
+                            }
+                            else if (TrainingCandidateAssignment.IsClientRequestRegistered)
+                            {
+                                <MudTooltip Text="@CandidateDetail.Organization?.Name" Color="Color.Primary" Arrow="true">
+                                    <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Info">
+                                        <span>Organizational</span>
+                                    </MudChip>
+                                </MudTooltip>
+                            }
+                            else if (TrainingCandidateAssignment.IsAdminRegistered)
+                            {
+                                <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error">
+                                    <span>Administrative</span>
+                                </MudChip>
+                            }
+                        </div>
+                    </div>
+                </MudCardContent>
+            </MudCard>
+        </div>
+    </div>
+    <div class="col-xxl-9 col-lg-8 col-12">
+        <MudTabs Elevation="0" PanelClass="bg-white" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-3">
+            <MudTabPanel Text="Attendances" Icon="@Icons.Material.Filled.Class" BadgeColor="Color.Secondary">
+                @if (ActivePanelIndex == 0)
+                {
+                    <CandidateClassDetails TrainingCandidateId="TrainingCandidateAssignment.TrainingCandidateId" />
+                }
+            </MudTabPanel>
+            <MudTabPanel Text="Subordinates" Icon="@Icons.Material.Filled.SupervisedUserCircle" BadgeColor="Color.Secondary">
+                @if (ActivePanelIndex == 1)
+                {
+                    <CandidateSubordinateDetails TrainingCandidateId="TrainingCandidateAssignment.TrainingCandidateId" />
+                }
+            </MudTabPanel>
+            <MudTabPanel Text="Inspections" Icon="@Icons.Material.Filled.Analytics" BadgeColor="Color.Secondary">
+                @if (ActivePanelIndex == 2)
+                {
+                    <CandidateInspectionDetails TrainingCandidateId="TrainingCandidateAssignment.TrainingCandidateId" />
+                }
+            </MudTabPanel>
+            <MudTabPanel Text="Certifications" Icon="@Icons.Material.Filled.Celebration" BadgeColor="Color.Secondary">
+                @if (ActivePanelIndex == 3)
+                {
+                    <CandidateCertificationDetails TrainingCandidateId="TrainingCandidateAssignment.TrainingCandidateId" />
+                }
+            </MudTabPanel>
+        </MudTabs>
+    </div>
+</div>
+
+@if (IsTrainingDetailsOpen)
+{
+    <ModalLayout T="@GetAllTrainingRequestsForAdmin"
+                 Module="Approval Matrix"
+                 Title="Training Details"
+                 Description="View the details of the training the respective candidate has been subscribed to."
+                 SubmitColor="Color.Success"
+                 Size="modal-lg"
+                 OnSave="OpenCloseTrainingDetailsModal"
+                 CancelLabel="Discard">
+        <div class="class-details-card custom-card mb-5">
+            <div class="row gap-y-5">
+                <div class="col-xl-3 col-lg-4 col-md-5 col-sm-6 col-12">
+                    <MudImage Src="@CandidateRequestDetails.TrainingDetails.ImageUrl" Width="207" Height="140" Alt="" Class="img-fluid w-100" />
+                </div>
+                <div class="col-xl-9 col-lg-8 col-md-7 col-sm-6 col-12">
+                    <MudCardContent Class="pa-0 d-flex flex-column gap-3">
+                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="fw-bold">@CandidateRequestDetails.TrainingDetails.Title</MudText>
+                        <MudText Typo="Typo.body2" Class="text-normal">@((MarkupString)CandidateRequestDetails.TrainingDetails.Description)</MudText>
+                        <MudPaper Elevation="0" Class="bg-transparent">
+                            <div class="date d-flex align-items-center gap-x-2 mb-2">
+                                <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20" />
+                                <MudText Typo="Typo.subtitle2" Class="text-normal">@CandidateRequestDetails.TrainingDetails.StartDate - @CandidateRequestDetails.TrainingDetails.EndDate</MudText>
+                            </div>
+                            <div class="date d-flex align-items-center gap-x-2 mb-2">
+                                <MudImage Src="images/icons/location.svg" Alt="Blue Calendar Icon" Width="20" Height="20" />
+                                <MudText Typo="Typo.subtitle2" Class="text-normal">@CandidateRequestDetails.TrainingDetails.LocationDetails</MudText>
+                            </div>
+                        </MudPaper>
+                        <MudPaper Elevation="0" Class="bg-transparent">
+                            <ActivationStatus IsActive="@CandidateRequestDetails.TrainingDetails.IsActive" />
+                        </MudPaper>
+                    </MudCardContent>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-column gap-4">
+            <div class="row gap-y-5">
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudTextField Label="Full Name" @bind-Value="CandidateRequestDetails.CandidateDetails.Name" ReadOnly="true" Variant="Variant.Outlined" />
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudTextField Label="Email Address" @bind-Value="CandidateRequestDetails.CandidateDetails.EmailAddress" ReadOnly="true" Variant="Variant.Outlined" />
+                </div>
+                <div class="col-xl-6 col-md-4 col-12">
+                    <MudTextField Label="Requested Date" @bind-Value="CandidateRequestDetails.RequestedDate" ReadOnly="true" Variant="Variant.Outlined" />
+                </div>
+                <div class="col-xl-6 col-md-4 col-12">
+                    <MudTextField Label="Action Date" @bind-Value="CandidateRequestDetails.ActionDate" ReadOnly="true" Variant="Variant.Outlined" />
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark mb-1">Status</MudText>
+                    @switch (CandidateRequestDetails.Action)
+                    {
+                        case Constants.RequestAction.PendingAction:
+                            <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Warning">
+                                <span>@Constants.RequestAction.PendingAction</span>
+                            </MudChip>
+                            break;
+                        case Constants.RequestAction.AcceptedAction:
+                            <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                <span>@Constants.RequestAction.AcceptedAction</span>
+                            </MudChip>
+                            break;
+                        case Constants.RequestAction.RejectedAction:
+                            <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error">
+                                <span>@Constants.RequestAction.RejectedAction</span>
+                            </MudChip>
+                            break;
+                    }
+                </div>
+                <div class="col-xl-6 col-md-6 col-12">
+                    <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="text-dark mb-1">Request Type</MudText>
+                    @if (CandidateRequestDetails.IsSelfRequested)
+                    {
+                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                            <span>Self Requested</span>
+                        </MudChip>
+                    }
+                    else if (CandidateRequestDetails.IsOrganizationRequested)
+                    {
+                        <MudTooltip Text="@CandidateDetail.Organization?.Name" Color="Color.Primary" Arrow="true">
+                            <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Info">
+                                <span>Organizational</span>
+                            </MudChip>
+                        </MudTooltip>
+                    }
+                    else if (CandidateRequestDetails.IsAdminRequested)
+                    {
+                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Error">
+                            <span>Administrative</span>
+                        </MudChip>
+                    }
+                </div>
+                @if (CandidateRequestDetails is { IsOrganizationRequested: true, CandidateDetails.Organization: not null })
+                {
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudTextField Label="Organization" @bind-Value="CandidateRequestDetails.CandidateDetails.Organization.Name" ReadOnly="true" Variant="Variant.Outlined" />
+                    </div>
+                }
+                @if (CandidateRequestDetails.Action != Constants.RequestAction.PendingAction)
+                {
+                    <div class="col-xl-12 col-md-12 col-12">
+                        <MudText Typo="Typo.h6" HtmlTag="h3" Class="fw-bold text-dark mb-1">Remarks</MudText>
+                        <MudText Typo="Typo.body2" Class="text-normal">@CandidateRequestDetails.Remarks</MudText>
+                    </div>
+                }
+            </div>
+        </div>
+    </ModalLayout>
+}

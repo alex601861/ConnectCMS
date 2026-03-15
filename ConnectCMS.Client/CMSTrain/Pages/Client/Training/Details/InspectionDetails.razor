@@ -1,0 +1,59 @@
+﻿@if (Inspections == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="questionnaire">
+            <div class="filter d-flex justify-content-start mb-4 flex-wrap">
+                <div class="filter-left d-flex align-items-center gap-x-2">
+                    <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Phase Count</th>
+                    <th>Uploaded Date</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var inspection in Inspections.Result)
+                {
+                    <tr>
+                        <td>@(Inspections.Result.IndexOf(inspection) + 1).</td>
+                        <td>
+                            <div class="d-block">
+                                <div>@inspection.Name</div>
+                                <div class="text-muted fst-italic">@inspection.Type</div>
+                            </div>
+                            @inspection.Name
+                        </td>
+                        <td>@inspection.PhasesCount</td>
+                        <td>@inspection.UploadedDate</td>
+                        <td>
+                            <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToQuestionDetailsForm(inspection.QuestionnaireId ?? Guid.Empty)"/>
+                            </MudTooltip>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Inspections.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Inspections.TotalCount" />
+    </div>
+}

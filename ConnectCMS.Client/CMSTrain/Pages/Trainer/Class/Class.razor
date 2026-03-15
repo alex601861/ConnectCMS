@@ -1,0 +1,33 @@
+﻿@page "/trainer/assigned-trainings/trainer-class-details/{ClassId:guid}"
+@attribute [Authorize]
+
+<PageTitle>@Layout.PageTitle</PageTitle>
+
+<div class="trainer-class-details">
+    <Back NavigationUrl="@($"/trainer/assigned-trainings/training-details/{ClassDetails.TrainingId}/1")" />
+    
+    <div class="mb-8">
+        <ClassDetails ClassId="ClassId"/>
+    </div>
+
+    <MudTabs Elevation="0" PanelClass="bg-white" @bind-ActivePanelIndex="ActivePanelIndex" Class="gap-y-5">
+        <MudTabPanel Text="Resource Materials" BadgeColor="Color.Secondary" BadgeData="@ClassCount.ResourceMaterialCount">
+            @if (ActivePanelIndex == 0)
+            {
+                <ResourceDetails IsEditable="true" IsMaterialForTraining="false" IsAccessedByAdmin="false" ModuleId="ClassId" IsDeletable="false" OnResourceMaterialsCountUpdate="HandleClassDetailsCounts" />
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Attendances" BadgeColor="Color.Secondary" BadgeData="@ClassCount.AttendanceCount">
+            @if (ActivePanelIndex == 1)
+            {
+                <Attendance ClassId="ClassId" IsEditable="false"/>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Trainers" BadgeColor="Color.Secondary" BadgeData="@ClassCount.TrainersCount">
+            @if (ActivePanelIndex == 2)
+            {
+                <TrainerDetails ModuleId="ClassId" IsAssignable="false" IsTrainerForTraining="false"/>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</div>

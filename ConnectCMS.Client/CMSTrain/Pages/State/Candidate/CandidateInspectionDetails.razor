@@ -1,0 +1,121 @@
+﻿@if (Inspections == null)
+{
+    <Loader />
+}
+else
+{
+    <div class="custom-table inner-padding">
+        <div class="questionnaire">
+            <div class="filter d-flex justify-content-start mb-4 flex-wrap">
+                <div class="filter-left d-flex align-items-center gap-x-2">
+                    <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark" />
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Phase Count</th>
+                        <th>Uploaded Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inspection in Inspections.Result)
+                    {
+                        <tr>
+                            <td>@(Inspections.Result.IndexOf(inspection) + 1).</td>
+                            <td>
+                                <div class="d-block">
+                                    <div>@inspection.Name</div>
+                                    <div class="text-muted fst-italic">@inspection.Type</div>
+                                </div>
+                            </td>
+                            <td>@inspection.PhasesCount</td>
+                            <td>@inspection.UploadedDate</td>
+                            <td>
+                                <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                    <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => OpenTrainingInspectionQuestionnaireDetailsModal(inspection.TrainingInspectionId)" />
+                                </MudTooltip>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Pagination PageCount="Inspections.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Inspections.TotalCount" />
+    </div>
+
+    if (IsTrainingInspectionQuestionnaireDetailsModalOpen)
+    {
+        <ModalLayout T="@GetCandidateTrainingInspectionDto"
+                     Module="Questionnaire"
+                     Title="Training Inspection"
+                     Description="Please follow the respective details to view and access your questionnaire."
+                     SubmitColor="Color.Primary"
+                     Size="modal-xl"
+                     OnSave="@OpenCloseTrainingInspectionQuestionnaireDetailsModal"
+                     CancelLabel="Discard">
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Period</th>
+                            <th>Eligibility</th>
+                            <th>Answer Status</th>
+                            <th>Answered Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var questionnaire in CandidateTrainingInspectionDetails.QuestionnaireResponses)
+                        {
+                            <tr>
+                                <td>@(CandidateTrainingInspectionDetails.QuestionnaireResponses.IndexOf(questionnaire) + 1).</td>
+                                <td>@questionnaire.EligibilityPeriod</td>
+                                <td>
+                                    <ActivationStatus IsActive="@questionnaire.IsEligible" />
+                                </td>
+                                <td>
+                                    @if (questionnaire.UserResponseId == null)
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Warning">
+                                            <span>Not Answered</span>
+                                        </MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Variant="Variant.Outlined" Class="status" Color="Color.Success">
+                                            <span>Answered</span>
+                                        </MudChip>
+                                    }
+                                </td>
+                                <td>@questionnaire.AnsweredDate</td>
+                                <td>
+                                    @if (questionnaire.UserResponseId != null)
+                                    {
+                                        <MudTooltip Text="View" Color="Color.Primary" Arrow="true">
+                                            <MudImage Src="images/icons/eye.svg" Alt="Upload Icon" Height="18" Width="18" @onclick="() => NavigateToAnswerDetailsForm(questionnaire.UserResponseId ?? Guid.Empty, CandidateTrainingInspectionDetails.Type)" />
+                                        </MudTooltip>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </ModalLayout>
+    }
+}

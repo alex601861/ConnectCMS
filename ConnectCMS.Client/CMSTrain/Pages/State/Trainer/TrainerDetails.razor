@@ -1,0 +1,206 @@
+﻿@if (Trainers is null)
+{
+    <Loader/>
+}
+else
+{
+    <div class="trainer inner-padding">
+        <div class="filter d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+            <div class="filter-left d-flex align-items-center gap-x-2">
+                <MudTextField T="string" @bind-Value="Search" Immediate="true" Placeholder="Search" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Class="search-input text-dark"/>
+            </div>
+            <div class="filter-right">
+                <DisplayFormat IsDisplayedAsGrid="IsDisplayedAsGrid" IsDisplayedAsGridChanged="HandleDisplayFormatChange"/>
+                @if (!IsTrainerForTraining && IsAssignable)
+                {
+                    <MudButton Color="Color.Primary" Class="btn btn--md" DropShadow="false" Variant="Variant.Filled" OnClick="OpenClassAssignedTrainerDetails" StartIcon="@Icons.Material.Filled.Add">Assign Trainers</MudButton>
+                }
+            </div>
+        </div>
+
+        @if (IsDisplayedAsGrid)
+        {
+            <div class="row gap-y-5 trainer-grid">
+                @foreach (var trainer in Trainers.Result)
+                {
+                    <div class="col-xxl-3 col-xl-4 col-md-6 col-12">
+                        <MudCard class="trainer-card custom-card pa-6 position-relative" Elevation="0">
+                            <MudMenu Class="triple-dot-menu" Icon="@Icons.Material.Filled.MoreVert" AriaLabel="Open Trainer Description">
+                                @if (IsAssignable)
+                                {
+                                    <MudMenuItem OnClick="() => OpenCloseUpdateTrainingDescriptionModal(trainer)">Details</MudMenuItem>
+                                }
+                                else
+                                {
+                                    <MudMenuItem OnClick="() => OpenCloseTrainingDescriptionModal(trainer.Id)">Details</MudMenuItem>
+                                }
+                            </MudMenu>
+                            <Avatar Name="@trainer.Name" ImageUrl="@trainer.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath"/>
+                            <MudCardContent class="pa-0 d-flex flex-column gap-y-4">
+                                <div class="trainer-info text-center">
+                                    <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-1">@trainer.Name</MudText>
+                                    <MudText Typo="Typo.body2" class="text-normal">@trainer.EmailAddress</MudText>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center flex-wrap gap-x-4 gap-y-4">
+                                    <div class="trainer-assigned-date text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Assigned Date</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@trainer.AssignedDate</MudText>
+                                    </div>
+                                    <div class="trainer-contact text-center">
+                                        <MudText Typo="Typo.subtitle1" HtmlTag="h3" Class="fw-bold text-dark mb-2">Contact Number</MudText>
+                                        <MudText Typo="Typo.body2" class="text-normal">@trainer.PhoneNumber</MudText>
+                                    </div>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>
+                <div class="table-responsive">
+                    <table class="table roles-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email Address</th>
+                            <th>Assigned Date</th>
+                            <th>Contact Number</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var trainer in Trainers.Result)
+                        {
+                            <tr>
+                                <td>@(Trainers.Result.IndexOf(trainer) + 1).</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <Avatar Name="@trainer.Name" ImageUrl="@trainer.ImageUrl" FilePath="@Constants.FilePath.UsersImagesFilePath" Height="40" Width="40"/>
+                                        @trainer.Name
+                                    </div>
+                                </td>
+                                <td>@trainer.EmailAddress</td>
+                                <td>@trainer.AssignedDate</td>
+                                <td>@trainer.PhoneNumber</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <Pagination PageCount="Trainers.TotalPages"
+                    SelectedPageSize="@PageSize"
+                    SelectedPageSizeChanged="UpdatePageSize"
+                    SelectedPageNumber="@PageNumber"
+                    SelectedPageNumberChanged="UpdatePageNumber"
+                    TotalRecords="Trainers.TotalCount" />
+    </div>
+
+    if (IsAssignTrainersModalOpen)
+    {
+        <ModalLayout T="@AssignTrainersDto"
+                     Module="Class Details"
+                     Title="Trainer Assignment"
+                     Description="Please select the trainers you want to assign to the respective class"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@AssignTrainerToClasses"
+                     SubmitLabel="Save"
+                     IsDisabled="IsAssignTrainersButtonDisabled"
+                     CancelLabel="Discard">
+            <MudTreeView Hover ReadOnly="false" TriState="true" @bind-SelectedValues="AssignedTrainerIds" SelectionMode="SelectionMode.MultiSelection" CheckBoxColor="Color.Info" Class="tree-view-upload">
+                @foreach (var trainer in TrainerList)
+                {
+                    <MudTreeViewItem T="Guid" Text="@GetUserDisplayName(trainer)" Value="@trainer.Id"/>
+                }
+            </MudTreeView>
+        </ModalLayout>
+    }
+    
+    if (IsUpdateTrainerDescriptionModalOpen)
+    {
+        <ModalLayout T="@UpdateClassTrainerDescriptionDto"
+                     Module="Trainer Details"
+                     Title="Assignment and Description"
+                     Description="Please input the description for the respective trainer assignment"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@UpdateCandidateFromTraining"
+                     IsDisabled="IsUpdateDescriptionButtonDisabled"
+                     SubmitLabel="Save"
+                     CancelLabel="Discard">
+            <MudTextField T="string" @bind-Value="UpdateClassTrainerDescription.Description" Label="Description" Variant="Variant.Outlined" Placeholder="Please enter your description..." Lines="7" Immediate="true"/>
+        </ModalLayout>
+    }
+
+    if (IsTrainerDescriptionModalOpen)
+    {
+        <ModalLayout T="@GetTrainerDescriptionDto"
+                     Module="Trainer Details"
+                     Title=@($"Trainer Description for {TrainerDescriptions.Trainer.Name}")
+                     Description="View the descriptions for the respective trainer assignment of the assigned classes"
+                     SubmitColor="Color.Primary"
+                     Size="modal-lg"
+                     OnSave="@CloseTrainerDescriptionModal"
+                     CancelLabel="Discard">
+            <div class="row">
+                @foreach (var item in TrainerDescriptions.Classes)
+                {
+                    <div class="class-details-card custom-card mb-2">
+                        <div class="d-flex align-items-center flex-wrap flex-sm-nowrap gap-y-5 gap-x-6">
+                            <div style="width: 207px">
+                                <MudImage Src="@item.ImageUrl" Height="140" Width="207" Class="img-fluid w-100 card__image" />
+                            </div>
+                            <MudCardContent Class="pa-0 d-flex flex-column gap-3">
+                                <div class="d-flex align-items-center justify-content-between w-100">
+                                    <div class="flex-grow-1 pe-2">
+                                        <MudText Typo="Typo.h6" HtmlTag="h2" Class="fw-bold">@item.Title</MudText>
+                                    </div>
+                                    <MudPaper Elevation="0" Class="bg-transparent">
+                                        @switch (item.Status)
+                                        {
+                                            case Constants.Schedule.ScheduledAction:
+                                                <MudButton Variant="Variant.Outlined" DropShadow="false" Color="Color.Secondary" Class="btn status-button">
+                                                    Scheduled
+                                                </MudButton>
+                                                break;
+                                            case Constants.Schedule.CompletedAction:
+                                                <MudButton Variant="Variant.Outlined" DropShadow="false" Color="Color.Success" Class="btn status-button">
+                                                    Completed
+                                                </MudButton>
+                                                break;
+                                            case Constants.Schedule.InProgressAction:
+                                                <MudButton Variant="Variant.Outlined" DropShadow="false" Color="Color.Info" Class="btn status-button">
+                                                    In Progress
+                                                </MudButton>
+                                                break;
+                                        }
+                                    </MudPaper>
+                                </div>
+                                <MudPaper Elevation="0" Class="bg-transparent">
+                                    <div class="date d-flex align-items-center gap-x-2 mb-2">
+                                        <MudImage Src="images/icons/calendar.svg" Alt="Blue Calendar Icon" Width="20" Height="20"/>
+                                        <MudText Typo="Typo.subtitle2" Class="text-normal">@item.Date</MudText>
+                                    </div>
+                                    <div class="time d-flex align-items-center gap-x-2 mb-2">
+                                        <MudImage Src="images/icons/clock.svg" Alt="Blue Clock Icon" Width="20" Height="20"/>
+                                        <MudText Typo="Typo.subtitle2" Class="text-normal">@item.StartTime - @item.EndTime</MudText>
+                                    </div>
+                                    <div class="time d-flex align-items-center gap-x-2">
+                                        <MudImage Src="images/icons/description.svg" Alt="Blue Clock Icon" Width="20" Height="20"/>
+                                        <MudText Typo="Typo.subtitle2" Class="text-normal">@item.Description</MudText>
+                                    </div>
+                                </MudPaper>
+                            </MudCardContent>
+                        </div>
+                    </div>
+                }
+            </div>
+        </ModalLayout>
+    }
+}
